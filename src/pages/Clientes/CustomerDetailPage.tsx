@@ -116,7 +116,6 @@ const moneyAxis = (v: number) => (Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(0)
 const n = (v: any) => Number(v) || 0;
 
 const estaFechado = (v: PedidoClienteType) => v.pedido.pedidoStatus === "FECHADO";
-const estaAberto = (v: PedidoClienteType) => v.pedido.pedidoStatus === "ABERTO";
 const estaCancelado = (v: PedidoClienteType) => v.pedido.pedidoStatus === "CANCELADO";
 
 // totalPedido pronto da API; se vier zerado, recalcula pelos itens
@@ -625,7 +624,7 @@ function TabNotas({ pedidos, onAbrir }: { pedidos: PedidoClienteType[]; onAbrir:
                     onClick={() => onAbrir(v)}
                     className={`grid w-full ${cols} items-center gap-2 border-b border-white/[0.04] px-4 py-2.5 text-left transition-colors last:border-0 hover:bg-white/[0.04]`}
                   >
-                    <span className={`${T.cell} text-[#8a85b4]`}>{formatDate(v.pedido.dataPedido)}</span>
+                    <span className={`${T.cell} text-[#8a85b4]`}>{formatDate(new Date(v.pedido.dataPedido))}</span>
                     <NoteStatusBadge v={v} />
                     <span className={`${T.cell} text-[#ece9ff]`}>{formatCurrency(total)}</span>
                     <span className={`${T.cell} ${pago > 0 ? "text-[#5dcaa5]" : "text-[#4e4a72]"}`}>

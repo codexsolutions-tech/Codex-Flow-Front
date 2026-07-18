@@ -1,10 +1,10 @@
 import sysgrafix from "./sysgrafix.service";
 import NoteType from "../types/InvoiceType";
-import InvoiceType, { PedidoClienteType, PedidosResponseType } from "../types/InvoiceType";
+import { PedidoClienteType, PedidosResponseType } from "../types/InvoiceType";
 
 const NoteService = {
   create: (note: NoteType | Record<string, unknown>) => sysgrafix.post("/pedidos/novo-pedido", note),
-  getAll: () => sysgrafix.get<InvoiceType>("/pedidos/"),
+  getAll: () => sysgrafix.get<PedidosResponseType>("/pedidos/"),
   getById: async (pedidoId: string): Promise<PedidoClienteType | null> => {
     const { data } = await sysgrafix.get<PedidosResponseType>("/pedidos/");
     return data?.data?.find((registro) => registro.pedido.pedidoId === pedidoId) ?? null;

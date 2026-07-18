@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import {
   Package,
@@ -24,17 +24,12 @@ const Sidebar = () => {
   const { user, logout } = useAuth();
   const { enterprise, fetchEnterprise } = useEnterprise();
 
-  const [open, setOpen] = useState(false); //
-  const [menuOpen, setMenuOpen] = useState(false); // menu do usuário
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false); // menu mobile
 
   useEffect(() => {
-    const fetchData = async () => {
-      fetchEnterprise(user?.codigoEmpresa.slice(0, -2));
-    };
-    fetchData();
-    console.log(user)
+    fetchEnterprise(Number(user?.codigoEmpresa?.slice(0, -2)));
   }, []);
+
   const userInitials = useMemo(
     () =>
       user?.nome
@@ -47,33 +42,18 @@ const Sidebar = () => {
   );
 
   const companyInitial = (enterprise?.nomeFantasia || "E").trim().charAt(0).toUpperCase();
+  const companyImage = enterprise?.urlLogo || enterprise?.urlImagem || "";
 
   const isActive = (route: string) => pathname.includes(`/${route}`);
 
   const goto = (route: string) => {
     setOpen(false);
-    setMenuOpen(false);
     navigate(route);
   };
 
   const handleLogout = () => {
-    setMenuOpen(false);
     Promise.resolve(logout()).catch(() => {});
   };
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onDown = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [menuOpen]);
 
   const item = (route: string, icon: ReactNode, label: string, disabled = false) => {
     if (disabled) {
@@ -133,16 +113,30 @@ const Sidebar = () => {
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
+        {/* Marca da empresa */}
         <div className="flex items-center gap-3.5 border-b border-white/[0.07] px-5 py-3.5">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[#7c6ef5] text-lg font-semibold text-white">
-            {companyInitial}
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.1] bg-[#1c1a33]">
+            {companyImage ? (
+              <img
+                src={companyImage}
+                alt={enterprise?.nomeFantasia || "Logo"}
+                className="h-full w-full object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <span className="text-base font-semibold text-[#c4baff]">{companyInitial}</span>
+            )}
           </div>
+
           <div className="min-w-0 flex-1">
             <p className="truncate text-[15px] font-semibold text-[#f1eeff]">
               {enterprise?.nomeFantasia || "Sua Empresa"}
             </p>
             <p className="truncate text-xs text-[#6f6a93]">Painel de gestão</p>
           </div>
+
           <button
             type="button"
             onClick={() => setOpen(false)}
@@ -171,11 +165,11 @@ const Sidebar = () => {
         </nav>
 
         {/* Usuário */}
-        <div className="flex items-center gap-3 border-t border-white/[0.07] px-4 py-4">
+        <div className="flex items-center gap-3 border-t border-white/[0.07] px-4 py-3">
           {user?.image ? (
             <img src={user.image} alt="Avatar" className="h-9 w-9 flex-shrink-0 rounded-full object-cover" />
           ) : (
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#7c6ef5] text-xs  text-white">
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-[#7c6ef5] text-xs text-white">
               {userInitials}
             </div>
           )}
@@ -185,40 +179,28 @@ const Sidebar = () => {
             <p className="truncate text-[11px] text-[#6f6a93]">{user?.cargo || "Conectado"}</p>
           </div>
 
-          <div className="relative" ref={menuRef}>
-            <button
-              type="button"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label="Opções"
-              className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${
-                menuOpen
-                  ? "border-[#7c6ef5]/40 bg-[#7c6ef5]/[0.16] text-[#a99cf8]"
-                  : "border-white/[0.08] text-[#6b6890] hover:bg-white/[0.06]"
-              }`}
-            >
-              <Settings size={15} />
-            </button>
+          <button
+            type="button"
+            onClick={() => goto("/configuracoes")}
+            aria-label="Configurações"
+            className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-white/[0.06] ${
+              isActive("configuracoes") ? "text-[#a99cf8]" : "text-[#6b6890] hover:text-[#a99cf8]"
+            }`}
+          >
+            <Settings size={16} />
+          </button>
+        </div>
 
-            {menuOpen && (
-              <div className="absolute bottom-full right-0 mb-2 w-52 overflow-hidden rounded-xl border border-white/10 bg-[#1c1a33] p-1 shadow-2xl">
-                <button
-                  type="button"
-                  onClick={() => goto("/configuracoes")}
-                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-[#c4baff] transition-colors hover:bg-white/[0.06]"
-                >
-                  <Settings size={15} className="text-[#8a86b0]" /> Configurações
-                </button>
-                <div className="my-1 h-px bg-white/[0.07]" />
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-[#f09595] transition-colors hover:bg-[#f09595]/10"
-                >
-                  <LogOut size={15} /> Sair
-                </button>
-              </div>
-            )}
-          </div>
+        {/* Rodapé */}
+        <div className="flex items-center justify-between border-t border-white/[0.07] px-4 py-2.5">
+          <span className="truncate text-[11px] text-[#5a5676]">CodEx Solutions</span>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 text-[12px] text-[#8a86b0] transition-colors hover:text-[#f09595]"
+          >
+            <LogOut size={14} /> Sair
+          </button>
         </div>
       </aside>
     </>

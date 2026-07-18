@@ -3,12 +3,11 @@ import { Outlet } from "react-router-dom";
 
 const Main = () => {
   return (
-    <div className="flex h-[100vh] w-[100vw] overflow-hidden">
+    <div className="flex h-screen w-screen overflow-hidden">
       <Siderbar />
-
-      <div className="bg-white w-full h-full max-md:rounded-lg shadow-lg">
+      <main className="min-w-0 flex-1 overflow-hidden bg-[#0e0d1a] max-md:rounded-lg shadow-lg">
         <Outlet />
-      </div>
+      </main>
     </div>
   );
 };

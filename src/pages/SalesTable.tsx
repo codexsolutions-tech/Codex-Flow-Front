@@ -59,15 +59,6 @@ const ehDoMes = (data: string | Date, ref: Date) => {
 
 const formatarData = (data?: string | Date) =>
   data ? new Date(data).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" }) : "--";
-
-const iniciais = (nome?: string) =>
-  (nome ?? "?")
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((s) => s[0]?.toUpperCase())
-    .join("");
-
 /* ------------------------------------------------------------------ */
 /* Tipos locais                                                        */
 /* ------------------------------------------------------------------ */

@@ -7,8 +7,6 @@ import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
 import { eStatus } from "../../../../types/ClientType";
 
-/* ─── Schema (sem mudanças) ─────────────────────────────────────── */
-
 const optionalDigits = z
   .string()
   .trim()

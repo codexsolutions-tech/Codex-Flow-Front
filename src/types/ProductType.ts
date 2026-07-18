@@ -3,8 +3,8 @@ type ProductType = {
   nome: string;
   valorCompra: number;
   valorVenda: number;
-  descricao: string;
-  imagem: string;
+  descricao?: string;
+  imagem?: string;
   quantidade: number;
 };
 

@@ -4,14 +4,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: "#0e0d1a", // fundo da página
+        canvas: "#0e0d1a",
         surface: {
-          DEFAULT: "#15132a", // cards, tabelas, modais
-          raised: "#1c1a30", // hover de cards
+          DEFAULT: "#15132a",
+          raised: "#1c1a30",
         },
-        ink: "#eceafc", // texto principal (mais claro que antes)
-        mist: "#a5a1c9", // texto secundário (antes era escuro demais)
-        faint: "#6f6a93", // texto terciário / placeholders
+        ink: "#eceafc",
+        mist: "#a5a1c9",
+        faint: "#6f6a93",
         accent: {
           DEFAULT: "#7c6ef5",
           soft: "#9b8ff5",

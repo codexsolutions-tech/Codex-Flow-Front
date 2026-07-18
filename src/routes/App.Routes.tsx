@@ -15,7 +15,7 @@ import CustomersTable from "../pages/SalesTable";
 import LoadingScreen from "../pages/Main/LoadingScreen";
 import CustomerDetailPage from "../pages/Clientes/CustomerDetailPage";
 import TableStock from "../pages/Stock/StockPage";
-import ConfiguracoesPage from "../pages/ConfiguracoesPage";
+import ConfiguracoesPage from "../pages/Config/ConfiguracoesPage";
 import LandingPage from "../pages/LadingPage";
 
 const PUBLIC_PATHS = ["/login", "/cadastro", "/page"];
