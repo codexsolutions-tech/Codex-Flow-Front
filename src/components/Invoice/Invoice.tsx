@@ -32,7 +32,6 @@ type LinhaPedido = {
 };
 
 type InvoiceProps = {
-  /** pedidoId da API — agora é um UUID (string), não number */
   id?: string;
   clienteId?: string;
   nome?: string;
@@ -73,7 +72,6 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
       });
   }, []);
 
-  // Carrega o pedido (GET /pedidos/) e mapeia itensPedido -> linhas editáveis
   useEffect(() => {
     if (!id) return;
 

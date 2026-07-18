@@ -25,11 +25,18 @@ function AnimatedRoutes({ isLogged }: { isLogged: boolean }) {
 
   const pageAnimation = (page: React.ReactNode) => (
     <motion.div
-      initial={{ opacity: 0, x: 40 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -40 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-      style={{ width: "100%", height: "100%" }}
+      initial={{ opacity: 0, scale: 0.99, y: 8 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.995, y: -8 }}
+      transition={{
+        duration: 0.3,
+        ease: [0.25, 1, 0.5, 1],
+      }}
+      style={{
+        width: "100%",
+        height: "100%",
+        willChange: "transform, opacity",
+      }}
     >
       {page}
     </motion.div>

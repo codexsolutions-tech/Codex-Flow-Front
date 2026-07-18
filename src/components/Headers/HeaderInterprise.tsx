@@ -6,7 +6,7 @@ const HeaderInterprise = () => {
   const { enterprise } = useEnterprise();
 
   if (!enterprise) return null;
-
+  console.log(enterprise);
   const endereco = enterprise.endereco;
   const contato = enterprise.contato;
 

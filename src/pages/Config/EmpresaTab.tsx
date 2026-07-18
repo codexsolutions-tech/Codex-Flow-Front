@@ -16,7 +16,8 @@ import useEnterprise from "../../store/EnterpriseStore/useEnterprise";
 import { onlyDigits } from "../../utils/format";
 import Field from "../../components/Input/Field";
 
-import { SettingsCard, SaveRow, SelectField, useSaver, maskCpfCnpj, maskCep, maskPhone, UFS } from "./ui";
+import { SettingsCard, SaveRow, SelectField, useSaver, maskCep, maskPhone, UFS } from "./ui";
+import { formatDocument } from "../../utils/format";
 
 const EmpresaTab = () => {
   const { enterprise } = useEnterprise();
@@ -29,7 +30,7 @@ const EmpresaTab = () => {
   const [form, setForm] = useState({
     nomeFantasia: e.nomeFantasia ?? e.name ?? "",
     nomeRepresentante: e.nomeRepresentante ?? "",
-    cpfCnpj: maskCpfCnpj(e.cpfCnpj ?? ""),
+    cpfCnpj: formatDocument(e.cpfCnpj ?? ""),
     inscMunicipal: e.inscMunicipal ?? "",
     urlLogo: e.urlLogo ?? "",
     urlImagem: e.urlImagem ?? "",

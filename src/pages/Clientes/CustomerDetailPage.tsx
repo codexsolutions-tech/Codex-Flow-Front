@@ -1,4 +1,3 @@
-// src/pages/Clientes/CustomerDetailPage.tsx
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -109,10 +108,6 @@ const TABS = [
 const axis = { tick: { fontSize: 11, fill: C.faint }, axisLine: false, tickLine: false } as const;
 const moneyAxis = (v: number) => (Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v));
 
-/* ═══════════════════════════════════════════════════════════════════
-   2 · HELPERS
-═══════════════════════════════════════════════════════════════════ */
-
 const n = (v: any) => Number(v) || 0;
 
 const estaFechado = (v: PedidoClienteType) => v.pedido.pedidoStatus === "FECHADO";
@@ -141,10 +136,6 @@ function classify(total: number) {
   if (total >= 500) return { tone: "green", label: "Regular", Icon: CheckCircle };
   return { tone: "muted", label: "Novo", Icon: UserPlus2 };
 }
-
-/* ═══════════════════════════════════════════════════════════════════
-   3 · COMPONENTES BASE
-═══════════════════════════════════════════════════════════════════ */
 
 function Section({
   title,

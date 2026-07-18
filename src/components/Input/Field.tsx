@@ -9,7 +9,6 @@ type FieldProps = {
 
 const Field = React.forwardRef<HTMLInputElement, FieldProps>(
   ({ label, hint, icon, error, className, ...props }, ref) => {
-    // uma única mensagem: erro tem prioridade sobre hint
     const message = error ?? hint ?? "";
 
     return (
@@ -34,11 +33,7 @@ const Field = React.forwardRef<HTMLInputElement, FieldProps>(
           />
         </div>
 
-        {/*
-          Espaço reservado sempre presente: evita o "pulo" do layout
-          quando o erro aparece. Sem erro e sem hint, fica invisível
-          mas mantém a altura.
-        */}
+        {}
         <p
           role={error ? "alert" : undefined}
           className={`mt-0.5 min-h-[13px] text-[10px] leading-[13px] ${error ? "text-[#f09595]" : "text-[#6b6790]"}`}

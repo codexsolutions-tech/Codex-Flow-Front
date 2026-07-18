@@ -9,7 +9,6 @@ const OPTIONS = [
 ];
 
 const AparenciaTab = () => {
-  // TODO: conectar a um ThemeContext / localStorage para persistir
   const [theme, setTheme] = useState("escuro");
 
   return (

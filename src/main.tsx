@@ -3,9 +3,12 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 
 import AppRoutes from "./routes/App.Routes.tsx";
+import { AlertProvider } from "./components/Alert/Alert.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AppRoutes />
+    <AlertProvider>
+      <AppRoutes />
+    </AlertProvider>
   </StrictMode>,
 );

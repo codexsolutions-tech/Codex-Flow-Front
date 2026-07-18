@@ -16,6 +16,7 @@ import ProductService from "../../services/Product.Service";
 import { ProductForm } from "./components/Form/ProductForm";
 import { ProductFormData } from "./components/Form/product.schema";
 import { Modal } from "../../components/Modals/Modal";
+import { useAlert } from "../../components/Alert/Alert";
 import { formatNumber, toPercent } from "../../utils/format";
 
 const SEARCH_DEBOUNCE = 250;
@@ -96,6 +97,8 @@ function SkeletonRows({ count }: { count: number }) {
 }
 
 const Estoque = () => {
+  const alert = useAlert();
+
   const [products, setProducts] = useState<ProductType[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<ProductType | null>(null);
   const [loading, setLoading] = useState(true);
@@ -135,7 +138,6 @@ const Estoque = () => {
     return () => clearTimeout(t);
   }, [search]);
 
-  // Recalcula perPage sempre que a altura do corpo muda (resize da janela, banner de erro, etc)
   useEffect(() => {
     const el = bodyRef.current;
     if (!el) return;
@@ -159,8 +161,35 @@ const Estoque = () => {
       await ProductService.create(data);
       fechar();
       await load();
+      alert.success("Produto cadastrado!", "O produto foi adicionado ao estoque.");
     } catch {
-      setError("Não foi possível cadastrar o produto.");
+      alert.error("Erro ao cadastrar", "Não foi possível cadastrar o produto.");
+    }
+  };
+
+  const handleUpdateProduct = async () => {
+    if (!selectedProduct?.id) return;
+    setError(null);
+    try {
+      // await ProductService.update(selectedProduct.id, data);
+      fechar();
+      await load();
+      alert.success("Produto atualizado!", "As alterações foram salvas.");
+    } catch {
+      alert.error("Erro ao atualizar", "Não foi possível salvar as alterações.");
+    }
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!selectedProduct?.id) return;
+    setError(null);
+    try {
+      // await ProductService.delete(selectedProduct.id);
+      fechar();
+      await load();
+      alert.success("Produto excluído!", "O produto foi removido do estoque.");
+    } catch {
+      alert.error("Erro ao excluir", "Não foi possível excluir o produto.");
     }
   };
 
@@ -208,9 +237,8 @@ const Estoque = () => {
     <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#0e0d1a] text-[#e8e4ff]">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(124,110,245,0.16),transparent_70%)]" />
 
-      {/* Cabeçalho */}
       <header className="relative z-20 shrink-0 border-b border-white/[0.07] bg-[#0e0d1a]/80 backdrop-blur-xl">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 lg:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 lg:px-8">
           <div className="flex items-center gap-3.5">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#7c6ef5]/25 bg-gradient-to-br from-[#7c6ef5]/25 to-[#a78bfa]/10">
               <Tags className="h-5 w-5 text-[#b7aef9]" />
@@ -506,6 +534,7 @@ const Estoque = () => {
         <ProductForm
           submitText="Salvar alterações"
           onCancel={fechar}
+          onDelete={handleDeleteProduct}
           defaultValues={{
             nome: selectedProduct?.nome,
             valorCompra: selectedProduct?.valorCompra,
@@ -514,10 +543,7 @@ const Estoque = () => {
             descricao: selectedProduct?.descricao,
             imagem: selectedProduct?.imagem,
           }}
-          onSubmit={(data) => {
-            console.log(data);
-            fechar();
-          }}
+          onSubmit={handleUpdateProduct}
         />
       </Modal>
     </div>

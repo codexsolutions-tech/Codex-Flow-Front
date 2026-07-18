@@ -4,13 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, Eye, EyeOff, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
 import useAuth from "../../../store/AuthStore/useAuth";
 import AuthFormInputs, { authSchema } from "./AuthSchema";
 
-// ⚠️ Ajuste o path para onde você mantém o onlyDigits
+import { useAlert } from "../../../components/Alert/Alert";
 import { onlyDigits } from "../../../utils/format";
 
 const LANDING_ROUTE = "/page";
@@ -33,6 +30,7 @@ const maskCpfCnpj = (v: string) => {
 const AuthPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const alert = useAlert();
 
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -45,34 +43,30 @@ const AuthPage = () => {
   } = useForm<AuthFormInputs>({ resolver: zodResolver(authSchema) });
 
   const onSubmit = async (data: AuthFormInputs) => {
+    console.log("✅ onSubmit chamado", data);
     if (isLoading) return;
     setLoginError(false);
     setIsLoading(true);
-    const toastId = toast.loading("Entrando...");
     try {
       await login({
         email: data.email,
         senha: data.senha,
         cpfCnpjEmpresa: onlyDigits(data.cpfCnpjEmpresa),
       });
-      toast.update(toastId, {
-        render: "Login realizado!",
-        type: "success",
-        isLoading: false,
-        autoClose: 2000,
-      });
-      // redirect é feito pelo AuthGate quando isLogged vira true
-    } catch {
+      console.log("✅ login resolveu -> alert.success");
+      alert.success("Login realizado!", "Você será redirecionado para o painel.");
+    } catch (err) {
+      console.log("❌ login rejeitou -> alert.error", err);
+      alert.error("Erro ao fazer login", "Verifique seu CPF/CNPJ, email e senha e tente novamente.");
       setLoginError(true);
-      toast.update(toastId, {
-        render: "Erro ao fazer login",
-        type: "error",
-        isLoading: false,
-        autoClose: 3000,
-      });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // handler que roda quando a VALIDAÇÃO falha
+  const onInvalid = (formErrors: unknown) => {
+    console.log("⚠️ validação bloqueou o submit", formErrors);
   };
 
   /* ------------------------- Estilos compactos ------------------------- */
@@ -89,8 +83,6 @@ const AuthPage = () => {
 
   return (
     <div className="cf-page relative h-[100dvh] w-full flex items-center justify-center px-3 py-3 sm:px-4 sm:py-5 bg-[#0b0913] overflow-hidden">
-      <ToastContainer position="top-right" theme="dark" />
-
       <style>{`
         .cf-input:-webkit-autofill,
         .cf-input:-webkit-autofill:hover,
@@ -167,7 +159,7 @@ const AuthPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-1.5 sm:gap-2">
+          <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="flex flex-col gap-1.5 sm:gap-2">
             <div>
               <label className={labelCls}>CPF ou CNPJ da empresa</label>
               <div className={fieldBox}>

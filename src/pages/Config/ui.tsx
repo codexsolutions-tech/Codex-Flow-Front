@@ -4,23 +4,6 @@ import { Lock, Eye, EyeOff, CircleCheck, Save } from "lucide-react";
 
 import { onlyDigits } from "../../utils/format";
 
-/* --------------------------------- Máscaras -------------------------------- */
-
-export const maskCpfCnpj = (v: string) => {
-  const d = onlyDigits(v).slice(0, 14);
-  if (d.length <= 11) {
-    return d
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-  }
-  return d
-    .replace(/(\d{2})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1/$2")
-    .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
-};
-
 export const maskCep = (v: string) =>
   onlyDigits(v)
     .slice(0, 8)

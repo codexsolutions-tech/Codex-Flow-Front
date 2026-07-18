@@ -5,83 +5,107 @@ import AuthFormInputs from "../../pages/Auth/Login/AuthSchema";
 import useAuthProps from "./useAuthProps";
 import { decodeToken, isTokenExpired } from "../../utils/decodeToken";
 
-const useAuth = create<useAuthProps & { loading: boolean }>((set, get) => ({
-  user: null,
-  isLogged: false,
-  loading: true,
+const TOKEN_KEY = "token";
+const REFRESH_TOKEN_KEY = "refreshToken";
 
-  login: async (data: AuthFormInputs) => {
-    const response = await AuthService.login(data);
+const storage = {
+  getToken: () => localStorage.getItem(TOKEN_KEY),
 
-    const payloadData = response?.data?.data?.[0];
-    const accessToken = payloadData?.accessToken;
-    const refreshToken = payloadData?.refreshToken;
+  setTokens: (accessToken: string, refreshToken?: string) => {
+    localStorage.setItem(TOKEN_KEY, accessToken);
 
-    if (!accessToken) {
-      console.error("LOGIN: resposta sem accessToken →", response?.data);
-      throw new Error("Resposta de login inválida");
+    if (refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
     }
+  },
 
-    localStorage.setItem("token", accessToken);
-    if (refreshToken) localStorage.setItem("refreshToken", refreshToken);
+  clear: () => {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+  },
+};
 
-    const payload = decodeToken(accessToken);
+const createUser = (token: string) => {
+  const payload = decodeToken(token);
+
+  return {
+    id: payload.id,
+    nome: payload.nome,
+    email: payload.email,
+    cargo: payload.cargo,
+    permissao: payload.permissao,
+    codigoEmpresa: payload.codigoEmpresa,
+  };
+};
+
+const useAuth = create<useAuthProps & { loading: boolean }>((set, get) => {
+  const authenticate = (accessToken: string, refreshToken?: string) => {
+    storage.setTokens(accessToken, refreshToken);
 
     set({
-      user: {
-        id: payload.id,
-        nome: payload.nome,
-        email: payload.email,
-        cargo: payload.cargo,
-        permissao: payload.permissao,
-        codigoEmpresa: payload.codigoEmpresa,
-      },
+      user: createUser(accessToken),
       isLogged: true,
       loading: false,
     });
-  },
+  };
 
-  initialize: () => {
-    if (!get().loading) return;
+  const clearAuth = () => {
+    storage.clear();
 
-    const token = localStorage.getItem("token");
+    set({
+      user: null,
+      isLogged: false,
+      loading: false,
+    });
+  };
 
-    if (!token) {
-      set({ loading: false });
-      return;
-    }
+  return {
+    user: null,
+    isLogged: false,
+    loading: true,
 
-    try {
-      if (isTokenExpired(token)) {
-        throw new Error("Token expirado");
+    login: async (data: AuthFormInputs) => {
+      const response = await AuthService.login(data);
+
+      const auth = response?.data?.data?.[0];
+
+      if (!auth?.accessToken) {
+        console.error("LOGIN: resposta inválida", response?.data);
+        throw new Error("Resposta de login inválida");
       }
 
-      const payload = decodeToken(token);
+      authenticate(auth.accessToken, auth.refreshToken);
+    },
 
-      set({
-        user: {
-          id: payload.id,
-          nome: payload.nome,
-          email: payload.email,
-          cargo: payload.cargo,
-          permissao: payload.permissao,
-          codigoEmpresa: payload.codigoEmpresa,
-        },
-        isLogged: true,
-        loading: false,
-      });
-    } catch {
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-      set({ user: null, isLogged: false, loading: false });
-    }
-  },
+    initialize: () => {
+      if (!get().loading) return;
 
-  logout: () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    set({ user: null, isLogged: false });
-  },
-}));
+      const token = storage.getToken();
+
+      if (!token) {
+        set({ loading: false });
+        return;
+      }
+
+      try {
+        if (isTokenExpired(token)) {
+          throw new Error("Token expirado");
+        }
+
+        set({
+          user: createUser(token),
+          isLogged: true,
+          loading: false,
+        });
+      } catch {
+        clearAuth();
+      }
+    },
+
+    logout: () => {
+      clearAuth();
+    },
+  };
+});
 
 export default useAuth;

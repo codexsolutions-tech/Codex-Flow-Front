@@ -197,7 +197,7 @@ const Clientes = () => {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(124,110,245,0.16),transparent_70%)]" />
 
       <header className="relative z-20 shrink-0 border-b border-white/[0.07] bg-[#0e0d1a]/80 backdrop-blur-xl">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 lg:px-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 lg:px-8">
           <div className="flex items-center gap-3.5">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#7c6ef5]/25 bg-gradient-to-br from-[#7c6ef5]/25 to-[#a78bfa]/10">
               <Users className="h-5 w-5 text-[#b7aef9]" />
