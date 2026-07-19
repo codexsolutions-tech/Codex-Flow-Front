@@ -2,21 +2,6 @@ import { memo, useCallback, useState } from "react";
 import type { ReactNode } from "react";
 import { Lock, Eye, EyeOff, CircleCheck, Save } from "lucide-react";
 
-import { onlyDigits } from "../../utils/format";
-
-export const maskCep = (v: string) =>
-  onlyDigits(v)
-    .slice(0, 8)
-    .replace(/(\d{5})(\d)/, "$1-$2");
-
-export const maskPhone = (v: string) => {
-  const d = onlyDigits(v).slice(0, 11);
-  if (d.length <= 10) {
-    return d.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2");
-  }
-  return d.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
-};
-
 export const UFS = [
   "AC",
   "AL",

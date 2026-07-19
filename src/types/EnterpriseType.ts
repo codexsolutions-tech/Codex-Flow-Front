@@ -1,4 +1,5 @@
 interface EnterpriseType {
+  id: string;
   codigoEmpresa: string;
   nomeRepresentante: string;
   nomeFantasia: string;
@@ -6,6 +7,7 @@ interface EnterpriseType {
   inscMunicipal?: string;
   urlLogo?: string;
   urlImagem?: string;
+  ativo: boolean;
   endereco?: {
     logradouro: string;
     numero: string;

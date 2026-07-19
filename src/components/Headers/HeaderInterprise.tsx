@@ -1,4 +1,4 @@
-import useEnterprise from "../../store/EnterpriseStore/useEnterprise";
+import useEnterprise from "../../store/enterprise.store";
 import { MapPin, Building2, Phone, BadgeCheck } from "lucide-react";
 import { formatDocument, formatNumber } from "../../utils/format";
 
@@ -6,7 +6,7 @@ const HeaderInterprise = () => {
   const { enterprise } = useEnterprise();
 
   if (!enterprise) return null;
-  console.log(enterprise);
+
   const endereco = enterprise.endereco;
   const contato = enterprise.contato;
 

@@ -12,12 +12,11 @@ import NoteService from "../../services/Note.Service";
 import ProductService from "../../services/Product.Service";
 
 import CurrencyInput from "../Input/CurrencyInput";
-import { Modal } from "../Modals/Modal";
+import { Modal } from "../Modal";
 
 import { handleDownload } from "../Buttons/DownloadButton";
 
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useAlert } from "../Alert";
 
 import { CreditCard, DollarSign, Download, PackageSearch, Plus, Receipt, Save, Trash2, Wallet, X } from "lucide-react";
 
@@ -32,6 +31,7 @@ type LinhaPedido = {
 };
 
 type InvoiceProps = {
+  /** pedidoId da API — agora é um UUID (string), não number */
   id?: string;
   clienteId?: string;
   nome?: string;
@@ -47,6 +47,7 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
+  const alert = useAlert();
   const notaRef = useRef<HTMLDivElement>(null);
 
   const [products, setProducts] = useState<ProductType[]>([]);
@@ -59,6 +60,8 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
   const [tipoPagamento, setTipoPagamento] = useState("");
   const [valorPagamento, setValorPagamento] = useState(0);
 
+  const [saving, setSaving] = useState(false);
+
   const [modalProdutos, setModalProdutos] = useState(false);
   const [modalPagamentos, setModalPagamentos] = useState(false);
   const [modalExcluir, setModalExcluir] = useState(false);
@@ -68,17 +71,19 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
       .then(({ data }) => setProducts(data.data ?? []))
       .catch(() => {
         setProducts([]);
-        toast.error("Erro ao carregar produtos!");
+        alert.error("Erro ao carregar", "Não foi possível carregar os produtos.");
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Carrega o pedido (GET /pedidos/) e mapeia itensPedido -> linhas editáveis
   useEffect(() => {
     if (!id) return;
 
     NoteService.getById(id)
       .then((registro) => {
         if (!registro) {
-          toast.error("Pedido não encontrado!");
+          alert.error("Pedido não encontrado", "Não localizamos esse pedido no sistema.");
           return;
         }
 
@@ -93,7 +98,8 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
           })),
         );
       })
-      .catch(() => toast.error("Erro ao carregar o pedido!"));
+      .catch(() => alert.error("Erro ao carregar", "Não foi possível carregar o pedido."));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const adicionarProduto = (produto: ProductType) => {
@@ -107,7 +113,8 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
         quantidade: 1,
       },
     ]);
-    toast.success("Produto adicionado!");
+    // toast (não bloqueante) porque dispara a cada clique em produto
+    alert.toast("success", "Produto adicionado!", undefined, { position: "bottom-right", timer: 2000 });
   };
 
   const atualizarLinha = (uid: string, patch: Partial<LinhaPedido>) =>
@@ -130,17 +137,17 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
 
   const handleSalvar = async () => {
     if (!clienteFinal) {
-      toast.error("Você não pode gerar uma nota sem cliente!");
+      alert.warning("Sem cliente", "Você não pode gerar uma nota sem cliente.");
       return;
     }
 
     if (linhas.length === 0) {
-      toast.warning("Adicione pelo menos um produto!");
+      alert.warning("Nota vazia", "Adicione pelo menos um produto.");
       return;
     }
 
     if (linhas.every((l) => l.quantidade <= 0)) {
-      toast.warning("Informe a quantidade dos produtos!");
+      alert.warning("Quantidade inválida", "Informe a quantidade dos produtos.");
       return;
     }
 
@@ -153,13 +160,16 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
       })),
     };
 
-    const promise = !id ? NoteService.create(invoicePayload) : NoteService.update({ ...invoicePayload, pedidoId: id });
-
-    await toast.promise(promise, {
-      pending: !id ? "Gerando nota..." : "Salvando nota...",
-      success: "Nota salva com sucesso!",
-      error: "Erro ao salvar nota!",
-    });
+    setSaving(true);
+    try {
+      if (!id) await NoteService.create(invoicePayload);
+      else await NoteService.update({ ...invoicePayload, pedidoId: id });
+      alert.success("Nota salva!", "A nota foi salva com sucesso.");
+    } catch {
+      alert.error("Erro ao salvar", "Não foi possível salvar a nota.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleExcluirNota = async () => {
@@ -167,11 +177,10 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
 
     try {
       await NoteService.delete(id);
-      toast.success("Nota excluída com sucesso!");
-    } catch {
-      toast.error("Erro ao excluir nota!");
-    } finally {
       setModalExcluir(false);
+      alert.success("Nota excluída!", "A nota foi removida com sucesso.");
+    } catch {
+      alert.error("Erro ao excluir", "Não foi possível excluir a nota.");
     }
   };
 
@@ -201,8 +210,6 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
 
   return (
     <div className="flex h-full flex-col">
-      <ToastContainer position="bottom-right" theme="dark" />
-
       {/* ============ MODAL: ADICIONAR PRODUTO ============ */}
       <Modal
         open={modalProdutos}
@@ -437,7 +444,11 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
 
             <button
               title="Excluir nota"
-              onClick={() => (id ? setModalExcluir(true) : toast.error("Essa nota ainda não foi salva no sistema!"))}
+              onClick={() =>
+                id
+                  ? setModalExcluir(true)
+                  : alert.warning("Nota não salva", "Essa nota ainda não foi salva no sistema.")
+              }
               className={`${botaoToolbar} bg-[#f09595]/[0.15] text-[#f09595] hover:bg-[#a22d2d] hover:text-white`}
             >
               <Trash2 size={20} />
@@ -679,11 +690,11 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
 
           <button
             onClick={handleSalvar}
-            disabled={salvarDesabilitado}
+            disabled={salvarDesabilitado || saving}
             className="flex h-12 flex-shrink-0 items-center justify-center gap-2 rounded bg-gradient-to-r from-[#7c6ef5] to-[#8b7bf7] px-5 text-sm text-white shadow-md transition-all duration-200 hover:from-[#8d80f7] hover:to-[#9b8ff5] hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
           >
             <Save size={18} />
-            {!id ? "Gerar Nota" : "Salvar Alterações"}
+            {saving ? "Salvando..." : !id ? "Gerar Nota" : "Salvar Alterações"}
           </button>
         </footer>
       </div>

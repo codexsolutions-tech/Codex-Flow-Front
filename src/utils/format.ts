@@ -15,8 +15,12 @@ export function formatDate(value?: Date | string): string {
   return isNaN(date.getTime()) ? "—" : date.toLocaleDateString("pt-BR");
 }
 
-export function formatNumber(value: number): string {
-  return new Intl.NumberFormat("pt-BR").format(value);
+export function formatNumber(value: number | string): string {
+  const number = Number(value);
+
+  if (Number.isNaN(number)) return "0";
+
+  return new Intl.NumberFormat("pt-BR").format(number);
 }
 
 export function getInitials(name?: string): string {
@@ -32,7 +36,11 @@ export function getInitials(name?: string): string {
   );
 }
 
-/** Percentual inteiro de `part` sobre `total` (0 quando total = 0). */
 export function toPercent(part: number, total: number): number {
   return total > 0 ? Math.round((part / total) * 100) : 0;
 }
+
+export const maskCep = (v: string) =>
+  onlyDigits(v)
+    .slice(0, 8)
+    .replace(/(\d{5})(\d)/, "$1-$2");

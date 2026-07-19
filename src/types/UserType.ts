@@ -4,7 +4,7 @@ export default interface UserType {
   cargo: string;
   permissao: string;
   codigoEmpresa: string;
-
+  ativo: boolean;
   nome?: string;
   phone?: string;
   image?: string;

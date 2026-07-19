@@ -4,6 +4,36 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* TEMA CLARO (base) */
+  --canvas: 246 245 251;
+  --surface: 255 255 255;
+  --surface-raised: 244 243 251;
+  --ink: 27 25 48;
+  --mist: 78 75 107;
+  --faint: 123 119 153;
+  --muted: 160 157 187;
+  --accent: 124 110 245;
+  --accent-soft: 133 119 240;
+  --accent-strong: 88 71 212;
+  --fg: 20 18 45; /* usado em bordas e overlays translúcidos */
+}
+
+.dark {
+  /* TEMA ESCURO (seu design atual) */
+  --canvas: 14 13 26;
+  --surface: 21 19 42;
+  --surface-raised: 28 26 48;
+  --ink: 236 234 252;
+  --mist: 165 161 201;
+  --faint: 111 106 147;
+  --muted: 78 74 110;
+  --accent: 124 110 245;
+  --accent-soft: 169 156 248;
+  --accent-strong: 196 186 255;
+  --fg: 255 255 255;
+}
+
 html {
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;

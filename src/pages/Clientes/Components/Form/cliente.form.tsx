@@ -2,46 +2,12 @@ import { forwardRef, useId } from "react";
 import { X, Users, Loader2, Phone, Smartphone, MessageCircle, Mail, Info, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
+
 import { eStatus } from "../../../../types/ClientType";
-
-const optionalDigits = z
-  .string()
-  .trim()
-  .optional()
-  .transform((v) => {
-    const d = (v ?? "").replace(/\D/g, "");
-    return d.length ? d : undefined;
-  })
-  .refine((v) => v === undefined || v.length >= 8, "Número inválido");
-
-const optionalEmail = z
-  .union([z.string().trim().email("E-mail inválido"), z.literal("")])
-  .optional()
-  .transform((v) => (v ? v : undefined));
-
-export const clienteSchema = z.object({
-  nome: z.string().trim().min(1, "Informe o nome do cliente"),
-  cpfCnpj: z
-    .string()
-    .trim()
-    .transform((v) => v.replace(/\D/g, ""))
-    .refine((v) => v.length === 11 || v.length === 14, "CPF ou CNPJ inválido"),
-  status: z.nativeEnum(eStatus),
-  contato: z.object({
-    telefone: optionalDigits,
-    celular: optionalDigits,
-    whatsapp: optionalDigits,
-    email: optionalEmail,
-  }),
-});
-
-export type ClienteFormInput = z.input<typeof clienteSchema>;
-export type ClienteFormData = z.output<typeof clienteSchema>;
-
-/* ─── Tooltip compartilhado ─────────────────────────────────────── */
+import { useAlert } from "../../../../components/Alert";
+import { clienteSchema, ClienteFormInput, ClienteFormData } from "../Schema/cliente.schema";
 
 const TIP_ID = "cliente-form-tip";
 const tipStyle: React.CSSProperties = {
@@ -122,6 +88,8 @@ interface ClienteFormProps {
 }
 
 const ClienteForm = ({ saving = false, onClose, onSubmit }: ClienteFormProps) => {
+  const alert = useAlert();
+
   const {
     register,
     handleSubmit,
@@ -135,6 +103,8 @@ const ClienteForm = ({ saving = false, onClose, onSubmit }: ClienteFormProps) =>
       contato: { telefone: "", celular: "", whatsapp: "", email: "" },
     },
   });
+
+  const onInvalid = () => alert.error("Campos inválidos", "Revise os campos destacados e tente novamente.");
 
   return (
     <div
@@ -162,7 +132,10 @@ const ClienteForm = ({ saving = false, onClose, onSubmit }: ClienteFormProps) =>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit((data) => onSubmit(data))} className="flex flex-col gap-4 overflow-y-auto p-5">
+        <form
+          onSubmit={handleSubmit((data) => onSubmit(data), onInvalid)}
+          className="flex flex-col gap-4 overflow-y-auto p-5"
+        >
           <Field
             label="Nome"
             placeholder="Nome completo"

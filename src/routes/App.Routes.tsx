@@ -1,88 +1,95 @@
-import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 
-import useAuth from "../store/AuthStore/useAuth";
+import useAuth from "../store/auth.store";
+import useEnterprise from "../store/enterprise.store";
 
-import Main from "../pages/Main";
-import AuthPage from "../pages/Auth/Login/AuthPage";
-import CadastroEmpresaPage from "../pages/Auth/SignUp/CadastroPage";
+import Main from "../pages/Main/Main";
+import LoadingScreen from "../pages/Main/LoadingScreen";
+import LandingPage from "../pages/LadingPage";
+
+import AuthPage from "../pages/Auth/Login/Login.Page";
+import CadastroEmpresaPage from "../pages/Auth/SignUp/SIgnUp.Page";
 
 import Workflow from "../pages/PDVPage";
-import ClientesPage from "../pages/Clientes/ClientesPage";
-import CustomersTable from "../pages/SalesTable";
+import CheckoutPage from "../pages/CheckoutPage";
 
-import LoadingScreen from "../pages/Main/LoadingScreen";
-import CustomerDetailPage from "../pages/Clientes/CustomerDetailPage";
+import ClientesPage from "../pages/Clientes/Client.page";
+import CustomerDetailPage from "../pages/Clientes/Detail.page";
+
 import TableStock from "../pages/Stock/StockPage";
-import ConfiguracoesPage from "../pages/Config/ConfiguracoesPage";
-import LandingPage from "../pages/LadingPage";
+
+import ConfiguracoesPage from "../pages/Config/Config.Page";
+import EmpresaPage from "../pages/Config/pages/Empresa.Page";
+import ProfilePage from "../pages/Config/pages/Profile.Page";
+
+import SalesPage from "../pages/Sales/Sales.Page";
+import SalesOverviewPage from "../pages/Sales/pages/SalesOverview.Page";
+import SalesList from "../pages/Sales/pages/SalesList.Page";
+
+import NotFoundPage from "../pages/NotFoundPage";
 
 const PUBLIC_PATHS = ["/login", "/cadastro", "/page"];
 
-function AnimatedRoutes({ isLogged }: { isLogged: boolean }) {
+function AppRoutesContent({ isLogged }: { isLogged: boolean }) {
   const location = useLocation();
+  const { enterprise } = useEnterprise();
+  const { user } = useAuth();
+  const path = location.pathname;
+  const isPublic = PUBLIC_PATHS.includes(path);
 
-  const pageAnimation = (page: React.ReactNode) => (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.99, y: 8 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.995, y: -8 }}
-      transition={{
-        duration: 0.3,
-        ease: [0.25, 1, 0.5, 1],
-      }}
-      style={{
-        width: "100%",
-        height: "100%",
-        willChange: "transform, opacity",
-      }}
-    >
-      {page}
-    </motion.div>
-  );
+  if (!isLogged && !isPublic) {
+    return <Navigate to="/login" replace />;
+  }
+  if (isLogged && !enterprise) {
+    return <LoadingScreen />;
+  }
+
+  if (isLogged && user && !user.ativo && path !== "/checkout") {
+    return <Navigate to="/checkout" replace />;
+  }
+
+  if (isLogged && user?.ativo && (path === "/checkout" || path === "/login")) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/login" element={pageAnimation(<AuthPage />)} />
-        <Route path="/cadastro" element={pageAnimation(<CadastroEmpresaPage />)} />
-        <Route path="/page" element={pageAnimation(<LandingPage />)} />
+    <Routes>
+      <Route path="/login" element={<AuthPage />} />
+      <Route path="/cadastro" element={<CadastroEmpresaPage />} />
+      <Route path="/page" element={<LandingPage />} />
 
-        {isLogged && (
-          <Route path="/" element={<Main />}>
-            <Route index element={<Workflow />} />
+      {isLogged && (
+        <Route path="/" element={<Main />}>
+          <Route index element={<Workflow />} />
 
-            <Route path="workflow" element={<Workflow />} />
-            <Route path="clientes" element={<ClientesPage />} />
-            <Route path="configuracoes" element={<ConfiguracoesPage />} />
-            <Route path="clientes/:clienteId" element={<CustomerDetailPage />} />
-            <Route path="estoque" element={<TableStock />} />
+          <Route path="checkout" element={<CheckoutPage />} />
 
-            <Route path="vendas">
-              <Route index element={<CustomersTable />} />
-            </Route>
+          <Route path="clientes" element={<ClientesPage />} />
+          <Route path="clientes/:clienteId" element={<CustomerDetailPage />} />
+
+          <Route path="estoque" element={<TableStock />} />
+
+          <Route path="configuracoes" element={<ConfiguracoesPage />}>
+            <Route index element={<Navigate to="perfil" replace />} />
+            <Route path="perfil" element={<ProfilePage />} />
+            <Route path="empresa" element={<EmpresaPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
-        )}
-      </Routes>
-    </AnimatePresence>
+
+          <Route path="vendas" element={<SalesPage />}>
+            <Route index element={<SalesOverviewPage />} />
+            <Route path="lista" element={<SalesList />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+      )}
+
+      <Route path="*" element={<Navigate to={isLogged ? "/" : "/login"} replace />} />
+    </Routes>
   );
-}
-
-function AuthGate({ isLogged }: { isLogged: boolean }) {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const isPublic = PUBLIC_PATHS.includes(location.pathname);
-
-  useEffect(() => {
-    if (!isLogged && !isPublic) {
-      navigate("/login", { replace: true });
-    } else if (isLogged && location.pathname === "/login") {
-      navigate("/workflow", { replace: true });
-    }
-  }, [isLogged, isPublic, location.pathname, navigate]);
-
-  return <AnimatedRoutes isLogged={isLogged} />;
 }
 
 const AppRoutes = () => {
@@ -90,7 +97,7 @@ const AppRoutes = () => {
 
   useEffect(() => {
     initialize();
-  }, []);
+  }, [initialize]);
 
   if (loading) {
     return <LoadingScreen />;
@@ -98,7 +105,7 @@ const AppRoutes = () => {
 
   return (
     <BrowserRouter>
-      <AuthGate isLogged={isLogged} />
+      <AppRoutesContent isLogged={isLogged} />
     </BrowserRouter>
   );
 };

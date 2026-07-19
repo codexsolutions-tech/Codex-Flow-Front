@@ -1,4 +1,4 @@
-import type { ReactNode, InputHTMLAttributes, SelectHTMLAttributes, ButtonHTMLAttributes } from "react";
+import type { ReactNode, SelectHTMLAttributes, ButtonHTMLAttributes } from "react";
 import { Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export type Tone = "accent" | "success" | "warning" | "danger" | "neutral";
@@ -18,33 +18,6 @@ const toneChip: Record<Tone, string> = {
   danger: "border-danger/30 bg-danger/10 text-danger",
   neutral: "border-white/10 bg-white/[0.06] text-mist",
 };
-
-export function PageHeader({
-  icon,
-  title,
-  subtitle,
-  children,
-}: {
-  icon: ReactNode;
-  title: string;
-  subtitle?: string;
-  children?: ReactNode; // ações à direita
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15 text-accent-soft">
-          {icon}
-        </div>
-        <div>
-          <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
-          {subtitle && <p className="text-sm text-mist">{subtitle}</p>}
-        </div>
-      </div>
-      {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
-    </div>
-  );
-}
 
 /* ═══ Button ═══ */
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -142,32 +115,6 @@ export function SectionCard({
         </div>
       )}
       <div className={bodyClassName}>{children}</div>
-    </div>
-  );
-}
-
-/* ═══ Field / SelectField ═══ */
-export function Field({
-  label,
-  icon,
-  hint,
-  ...props
-}: InputHTMLAttributes<HTMLInputElement> & { label: string; icon?: ReactNode; hint?: string }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-medium text-mist">{label}</label>
-      <div className="relative">
-        <input
-          {...props}
-          className={`w-full rounded-lg border bg-white/[0.05] py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-faint focus:border-accent ${
-            icon ? "pl-9 pr-3" : "px-3"
-          }`}
-        />
-        {icon && (
-          <span className="pointer-events-none absolute left-3 top-1/2 flex -translate-y-1/2 text-faint">{icon}</span>
-        )}
-      </div>
-      {hint && <span className="text-xs text-faint">{hint}</span>}
     </div>
   );
 }

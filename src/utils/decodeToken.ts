@@ -7,6 +7,7 @@ export type TokenPayload = {
   cargo: string;
   permissao: string;
   codigoEmpresa: string;
+  ativo: boolean;
   iat: number;
   exp: number;
 };

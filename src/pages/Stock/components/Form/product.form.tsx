@@ -2,9 +2,9 @@ import { Hash, ShoppingBag, DollarSign, AlignLeft, Image as ImageIcon, X, Save, 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { productSchema, ProductFormData } from "./product.schema";
+import { productSchema, ProductFormData } from "../Schema/product.schema";
 import Field from "../../../../components/Input/Field";
-import { useAlert } from "../../../../components/Alert/Alert";
+import { useAlert } from "../../../../components/Alert";
 
 type Props = {
   defaultValues?: Partial<ProductFormData>;

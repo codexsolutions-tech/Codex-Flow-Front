@@ -15,31 +15,25 @@ const LoadingScreen = () => {
         transition={{ repeat: Infinity, duration: 6, ease: "easeInOut", delay: 0.5 }}
       />
 
-      {/* Conteúdo central */}
+    
       <div className="relative z-10 flex flex-col items-center gap-8">
-        {/* Spinner */}
         <div className="relative flex h-28 w-28 items-center justify-center">
-          {/* Anel externo */}
           <motion.div
             className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#7c6ef5] border-r-[#a78bfa]"
             animate={{ rotate: 360 }}
             transition={{ repeat: Infinity, duration: 1.4, ease: "linear" }}
           />
-          {/* Anel interno (sentido oposto) */}
           <motion.div
             className="absolute inset-3 rounded-full border-2 border-transparent border-b-[#a78bfa] border-l-[#7c6ef5]/60"
             animate={{ rotate: -360 }}
             transition={{ repeat: Infinity, duration: 1.8, ease: "linear" }}
           />
 
-          {/* Núcleo pulsante */}
           <motion.div
             className="h-12 w-12 rounded-2xl bg-gradient-to-br from-[#7c6ef5] to-[#a78bfa] shadow-[0_0_28px_rgba(124,110,245,0.65)]"
             animate={{ scale: [1, 1.12, 1], opacity: [0.85, 1, 0.85] }}
             transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
           />
-
-          {/* Pontos em órbita */}
           <motion.div
             className="absolute inset-0"
             animate={{ rotate: 360 }}
@@ -50,7 +44,6 @@ const LoadingScreen = () => {
           </motion.div>
         </div>
 
-        {/* Texto */}
         <div className="flex flex-col items-center gap-3">
           <motion.p
             className="flex items-center text-lg font-medium tracking-wide text-[#e8e4ff]"

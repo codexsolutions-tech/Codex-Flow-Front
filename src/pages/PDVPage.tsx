@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 import Invoice from "../components/Invoice/Invoice";
-import { Modal } from "../components/Modals/Modal";
+import { Modal } from "../components/Modal";
 
 import NoteService from "../services/Note.Service";
 import ClientService from "../services/Client.Service";

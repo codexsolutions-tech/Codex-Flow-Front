@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Users, UserPlus2, Search, AlertTriangle, ChevronLeft, ChevronRight, PieChart, RotateCw } from "lucide-react";
 import CustomerService from "../../services/Client.Service";
 import CustomerType, { eStatus, ContactType } from "../../types/ClientType";
-import ClienteForm, { ClienteFormData } from "./Components/Form/ClienteForm";
-import ClientesGrowthChart from "./Components/Charts/ClientesGrowthChart";
+import ClienteForm from "./Components/Form/cliente.form";
+import type { ClienteFormData } from "./Components/Schema/cliente.schema";
+import ClientesGrowthChart from "./Components/Chart/ClientesGrowthChart";
+import { useAlert } from "../../components/Alert";
 import { formatDocument, formatDate, formatNumber, getInitials, onlyDigits, toPercent } from "../../utils/format";
 
 const SEARCH_DEBOUNCE = 250;
@@ -66,6 +68,7 @@ function SkeletonRows({ count }: { count: number }) {
 
 const Clientes = () => {
   const navigate = useNavigate();
+  const alert = useAlert();
 
   const [customers, setCustomers] = useState<CustomerType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,13 +181,13 @@ const Clientes = () => {
 
   const handleCreate = async (data: ClienteFormData) => {
     setSaving(true);
-    setError(null);
     try {
       await CustomerService.create(data);
       setShowCreate(false);
       await load();
+      alert.success("Cliente cadastrado!", "O cliente foi adicionado com sucesso.");
     } catch {
-      setError("Não foi possível cadastrar o cliente.");
+      alert.error("Erro ao cadastrar", "Não foi possível cadastrar o cliente.");
     } finally {
       setSaving(false);
     }

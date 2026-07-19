@@ -10,14 +10,7 @@ type ModalProps = {
   title: string;
   subtitle?: string;
   accent?: string;
-  /**
-   * sm/md  -> diálogos simples (confirmações, formulários curtos)
-   * lg/xl  -> listas e relatórios
-   * full   -> telas inteiras (ex.: a nota do PDV) — ocupa a tela no
-   *           celular e quase toda a viewport no desktop
-   */
   size?: ModalSize;
-  /** @deprecated use `size`; mantido por compatibilidade */
   maxWidth?: string;
   children: ReactNode;
 };

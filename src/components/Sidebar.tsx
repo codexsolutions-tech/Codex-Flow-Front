@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import {
   Package,
@@ -15,20 +15,16 @@ import {
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import useAuth from "../store/AuthStore/useAuth";
-import useEnterprise from "../store/EnterpriseStore/useEnterprise";
+import useAuth from "../store/auth.store";
+import useEnterprise from "../store/enterprise.store";
 
 const Sidebar = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { enterprise, fetchEnterprise } = useEnterprise();
+  const { enterprise } = useEnterprise();
 
-  const [open, setOpen] = useState(false); // menu mobile
-
-  useEffect(() => {
-    fetchEnterprise(Number(user?.codigoEmpresa?.slice(0, -2)));
-  }, []);
+  const [open, setOpen] = useState(false);
 
   const userInitials = useMemo(
     () =>
@@ -44,7 +40,13 @@ const Sidebar = () => {
   const companyInitial = (enterprise?.nomeFantasia || "E").trim().charAt(0).toUpperCase();
   const companyImage = enterprise?.urlLogo || enterprise?.urlImagem || "";
 
-  const isActive = (route: string) => pathname.includes(`/${route}`);
+  const isActive = (route: string) => {
+    if (route === "") {
+      return pathname === "/";
+    }
+
+    return pathname === `/${route}` || pathname.startsWith(`/${route}/`);
+  };
 
   const goto = (route: string) => {
     setOpen(false);
@@ -100,7 +102,7 @@ const Sidebar = () => {
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Abrir menu"
-          className="fixed left-4 top-4 z-30 flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-[#15132a] text-[#c4baff] md:hidden"
+          className="fixed left-4 bottom-4 z-30 flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-[#15132a] text-[#c4baff] md:hidden"
         >
           <Menu size={18} />
         </button>
@@ -149,7 +151,7 @@ const Sidebar = () => {
 
         <nav className="flex-1 overflow-y-auto px-3 py-4 [scrollbar-color:rgba(124,110,245,0.25)_transparent] [scrollbar-width:thin]">
           {cat("Operação")}
-          {item("workflow", <ShoppingCart size={17} />, "PDV")}
+          {item("", <ShoppingCart size={17} />, "PDV")}
 
           {cat("Gerenciamento")}
           {item("estoque", <Package size={17} />, "Estoque")}

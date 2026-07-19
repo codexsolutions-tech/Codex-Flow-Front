@@ -1,21 +1,25 @@
-/** @type {import('tailwindcss').Config} */
+// tailwind.config.js
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        canvas: "#0e0d1a",
+        canvas: "rgb(var(--canvas) / <alpha-value>)",
         surface: {
-          DEFAULT: "#15132a",
-          raised: "#1c1a30",
+          DEFAULT: "rgb(var(--surface) / <alpha-value>)",
+          raised: "rgb(var(--surface-raised) / <alpha-value>)",
         },
-        ink: "#eceafc",
-        mist: "#a5a1c9",
-        faint: "#6f6a93",
+        ink: "rgb(var(--ink) / <alpha-value>)",
+        mist: "rgb(var(--mist) / <alpha-value>)",
+        faint: "rgb(var(--faint) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
         accent: {
-          DEFAULT: "#7c6ef5",
-          soft: "#9b8ff5",
+          DEFAULT: "rgb(var(--accent) / <alpha-value>)",
+          soft: "rgb(var(--accent-soft) / <alpha-value>)",
+          strong: "rgb(var(--accent-strong) / <alpha-value>)",
         },
+        fg: "rgb(var(--fg) / <alpha-value>)",
         success: "#5dcaa5",
         warning: "#fac775",
         danger: "#f09595",
@@ -24,7 +28,7 @@ export default {
         sans: ["Inter", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
       },
       borderColor: {
-        DEFAULT: "rgba(255,255,255,0.08)",
+        DEFAULT: "rgb(var(--fg) / 0.08)", // seu border-white/[0.08] vira só "border"
       },
     },
   },
