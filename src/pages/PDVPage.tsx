@@ -19,8 +19,8 @@ import {
 import Invoice from "../components/Invoice/Invoice";
 import { Modal } from "../components/Modal";
 
-import NoteService from "../services/Note.Service";
-import ClientService from "../services/Client.Service";
+import NoteService from "../services/note.service";
+import ClientService from "../services/client.service";
 import { formatCurrency } from "../utils/formatCurrency";
 
 import { PedidoClienteType } from "../types/InvoiceType";

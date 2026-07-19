@@ -12,7 +12,7 @@ import {
   Wallet,
 } from "lucide-react";
 import ProductType from "../../types/ProductType";
-import ProductService from "../../services/Product.Service";
+import ProductService from "../../services/product.service";
 import { ProductForm } from "./components/Form/product.form";
 import { ProductFormData } from "./components/Schema/product.schema";
 import { Modal } from "../../components/Modal";
