@@ -15,7 +15,7 @@ import {
 
 import useEnterprise from "../../../../store/enterprise.store";
 import Field from "../../../../components/Input/Field";
-import { useAlert } from "../../../../components/Alert";
+import { useAlert } from "../../../../components/Alert/Alert";
 import { onlyDigits, maskCep, formatDocument } from "../../../../utils/format";
 
 import { SettingsCard, SaveRow, SelectField, useSaver, UFS } from "../../ui";

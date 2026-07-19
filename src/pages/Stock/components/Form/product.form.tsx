@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { productSchema, ProductFormData } from "../Schema/product.schema";
 import Field from "../../../../components/Input/Field";
-import { useAlert } from "../../../../components/Alert";
+import { useAlert } from "../../../../components/Alert/Alert";
 
 type Props = {
   defaultValues?: Partial<ProductFormData>;

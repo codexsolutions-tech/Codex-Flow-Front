@@ -6,8 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import CustomerType, { eStatus } from "../../../../types/ClientType";
 import Field from "../../../../components/Input/Field";
-import { Modal } from "../../../../components/Modal";
-import { useAlert } from "../../../../components/Alert";
+import { Modal } from "../../../../components/Modals/Modal";
+import { useAlert } from "../../../../components/Alert/Alert";
 import { formatDocument, onlyDigits } from "../../../../utils/format";
 import { clienteSchema, ClienteFormInput, ClienteFormData } from "../Schema/cliente.schema";
 

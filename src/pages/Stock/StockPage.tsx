@@ -12,11 +12,11 @@ import {
   Wallet,
 } from "lucide-react";
 import ProductType from "../../types/ProductType";
-import ProductService from "../../services/product.service";
+import ProductService from "../../services/Product.Service";
 import { ProductForm } from "./components/Form/product.form";
 import { ProductFormData } from "./components/Schema/product.schema";
-import { Modal } from "../../components/Modal";
-import { useAlert } from "../../components/Alert";
+import { Modal } from "../../components/Modals/Modal";
+import { useAlert } from "../../components/Alert/Alert";
 import { formatNumber, toPercent } from "../../utils/format";
 
 const SEARCH_DEBOUNCE = 250;

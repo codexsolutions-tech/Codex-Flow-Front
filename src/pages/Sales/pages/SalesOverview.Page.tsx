@@ -12,9 +12,9 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Modal } from "../../../components/Modal";
+import { Modal } from "../../../components/Modals/Modal";
 import Invoice from "../../../components/Invoice/Invoice";
-import NoteService from "../../../services/note.service";
+import NoteService from "../../../services/Note.Service";
 import { formatCurrency } from "../../../utils/formatCurrency";
 import { PedidoClienteType } from "../../../types/InvoiceType";
 

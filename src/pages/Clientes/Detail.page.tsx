@@ -16,11 +16,11 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-import CustomerService from "../../services/client.service";
-import NoteService from "../../services/note.service";
+import CustomerService from "../../services/Client.Service";
+import NoteService from "../../services/Note.Service";
 import CustomerType, { eStatus } from "../../types/ClientType";
 import { PedidoClienteType } from "../../types/InvoiceType";
-import { useAlert } from "../../components/Alert";
+import { useAlert } from "../../components/Alert/Alert";
 import { formatDate, getInitials, onlyDigits, formatDocument, formatNumber } from "../../utils/format";
 import { formatCurrency } from "../../utils/formatCurrency";
 

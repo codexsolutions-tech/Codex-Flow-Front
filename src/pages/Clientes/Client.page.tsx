@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, UserPlus2, Search, AlertTriangle, ChevronLeft, ChevronRight, PieChart, RotateCw } from "lucide-react";
-import CustomerService from "../../services/client.service";
+import CustomerService from "../../services/Client.Service";
 import CustomerType, { eStatus, ContactType } from "../../types/ClientType";
 import ClienteForm from "./Components/Form/cliente.form";
 import type { ClienteFormData } from "./Components/Schema/cliente.schema";
 import ClientesGrowthChart from "./Components/Chart/ClientesGrowthChart";
-import { useAlert } from "../../components/Alert";
+import { useAlert } from "../../components/Alert/Alert";
 import { formatDocument, formatDate, formatNumber, getInitials, onlyDigits, toPercent } from "../../utils/format";
 
 const SEARCH_DEBOUNCE = 250;

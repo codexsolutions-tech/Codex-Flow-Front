@@ -1,7 +1,7 @@
 import { Receipt, ArrowUpRight, FileText } from "lucide-react";
 
 import useEnterprise from "../../../store/enterprise.store";
-import { useAlert } from "../../../components/Alert";
+import { useAlert } from "../../../components/Alert/Alert";
 import { formatDocument } from "../../../utils/format";
 
 import EmpresaForm from "../components/Form/Company.Form";

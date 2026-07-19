@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import useAuth from "../../../store/auth.store";
 import useEnterprise from "../../../store/enterprise.store";
-import { useAlert } from "../../../components/Alert";
+import { useAlert } from "../../../components/Alert/Alert";
 import Field from "../../../components/Input/Field";
 
 import { formatDocument, formatNumber } from "../../../utils/format";

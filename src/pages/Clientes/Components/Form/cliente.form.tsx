@@ -6,7 +6,7 @@ import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
 
 import { eStatus } from "../../../../types/ClientType";
-import { useAlert } from "../../../../components/Alert";
+import { useAlert } from "../../../../components/Alert/Alert";
 import { clienteSchema, ClienteFormInput, ClienteFormData } from "../Schema/cliente.schema";
 
 const TIP_ID = "cliente-form-tip";

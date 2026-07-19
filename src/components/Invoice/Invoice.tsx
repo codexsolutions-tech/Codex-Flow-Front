@@ -8,15 +8,15 @@ import ProductType from "../../types/ProductType";
 import PaymentType from "../../types/PaymentType";
 import InvoiceType, { PedidoClienteType } from "../../types/InvoiceType";
 
-import NoteService from "../../services/note.service";
-import ProductService from "../../services/product.service";
+import NoteService from "../../services/Note.Service";
+import ProductService from "../../services/Product.Service";
 
 import CurrencyInput from "../Input/CurrencyInput";
-import { Modal } from "../Modal";
+import { Modal } from "../Modals/Modal";
 
 import { handleDownload } from "../Buttons/DownloadButton";
 
-import { useAlert } from "../Alert";
+import { useAlert } from "../Alert/Alert";
 
 import { CreditCard, DollarSign, Download, PackageSearch, Plus, Receipt, Save, Trash2, Wallet, X } from "lucide-react";
 

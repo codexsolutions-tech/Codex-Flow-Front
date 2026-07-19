@@ -1,10 +1,10 @@
 import { create } from "zustand";
 
-import AuthService from "../services/auth.service";
+import AuthService from "../services/Auth.Service";
 import AuthFormInputs from "../pages/Auth/components/Schema/auth.schema";
 import useAuthProps from "./types/auth.types";
 import { decodeToken, isTokenExpired } from "../utils/decodeToken";
-import { alert } from "../components/Alert"; // ajuste o caminho se necessário
+import { alert } from "../components/Alert/Alert"; // ajuste o caminho se necessário
 import useEnterprise from "./enterprise.store";
 
 const TOKEN_KEY = "token";

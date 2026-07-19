@@ -22,7 +22,7 @@ import {
 import useAuth from "../../../../store/auth.store";
 import useEnterprise from "../../../../store/enterprise.store";
 import Field from "../../../../components/Input/Field";
-import { useAlert } from "../../../../components/Alert";
+import { useAlert } from "../../../../components/Alert/Alert";
 import { formatDocument, formatNumber } from "../../../../utils/format";
 import { SettingsCard, SaveRow, PasswordField, useSaver } from "../../ui";
 import { profileSchema, ProfileData, passwordSchema, PasswordData } from "../../schema/profile.schema";

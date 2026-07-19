@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Palette, Moon, Sun, Monitor, Check, LayoutGrid, Rows3 } from "lucide-react";
 
 import { SettingsCard } from "../ui";
-import { useAlert } from "../../../components/Alert";
+import { useAlert } from "../../../components/Alert/Alert";
 
 type ThemeId = "escuro" | "claro" | "sistema";
 

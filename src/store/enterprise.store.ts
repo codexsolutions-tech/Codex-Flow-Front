@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import EnterpriseService from "../services/enterprise.service";
+import EnterpriseService from "../services/Enterprise.Service";
 import useEnterpriseProps from "./types/enterprise.types";
 
 const useEnterprise = create<useEnterpriseProps>((set) => ({
