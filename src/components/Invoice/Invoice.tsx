@@ -8,8 +8,8 @@ import ProductType from "../../types/ProductType";
 import PaymentType from "../../types/PaymentType";
 import InvoiceType, { PedidoClienteType } from "../../types/InvoiceType";
 
-import NoteService from "../../services/Note.Service";
-import ProductService from "../../services/Product.Service";
+import NoteService from "../../services/note.service";
+import ProductService from "../../services/product.service";
 
 import CurrencyInput from "../Input/CurrencyInput";
 import { Modal } from "../Modals/Modal";
