@@ -163,7 +163,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
 
     setSaving(true);
     try {
-        if (!id) await NoteService.create(invoicePayload);
+      if (!id) await NoteService.create(invoicePayload);
       else await NoteService.update({ ...invoicePayload }, id);
       alert.success("Nota salva!", "A nota foi salva com sucesso.");
     } catch {
