@@ -12,7 +12,7 @@ import NoteService from "../../services/note.service";
 import ProductService from "../../services/product.service";
 
 import CurrencyInput from "../Input/CurrencyInput";
-import { Modal } from "../Modals/Modal";
+import { Modal } from "../Modal";
 
 import { handleDownload } from "../Buttons/DownloadButton";
 
@@ -88,17 +88,19 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
         }
 
         setPedidoInfo(registro);
+
         setLinhas(
-          registro.pedido.itensPedido.map((item) => ({
+          (registro.pedido?.itensPedido ?? []).map((item) => ({
             uid: gerarUID(),
-            produtoId: item.produto.produtoId,
+            produtoId: String(item.produto.produtoId),
             nome: item.produto.nomeProduto,
-            valorVenda: Number(item.valorVendaItem) || 0,
+            valorVenda: Number(item.valorVendaItem) || Number(item.produto.valorProduto) || 0,
             quantidade: Number(item.quantidadeItem) || 0,
           })),
         );
       })
       .catch(() => alert.error("Erro ao carregar", "Não foi possível carregar o pedido."));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
@@ -117,8 +119,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
     alert.toast("success", "Produto adicionado!", undefined, { position: "bottom-right", timer: 2000 });
   };
 
-  const atualizarLinha = (uid: string, patch: Partial<LinhaPedido>) =>
-    setLinhas((prev) => prev.map((l) => (l.uid === uid ? { ...l, ...patch } : l)));
+  const atualizarLinha = (uid: string, patch: Partial<LinhaPedido>) => setLinhas((prev) => prev.map((l) => (l.uid === uid ? { ...l, ...patch } : l)));
 
   const removerProduto = (uid: string) => setLinhas((prev) => prev.filter((l) => l.uid !== uid));
 
@@ -163,7 +164,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
     setSaving(true);
     try {
       if (!id) await NoteService.create(invoicePayload);
-      else await NoteService.update({ ...invoicePayload, pedidoId: id });
+      else await NoteService.update({ ...invoicePayload }, id);
       alert.success("Nota salva!", "A nota foi salva com sucesso.");
     } catch {
       alert.error("Erro ao salvar", "Não foi possível salvar a nota.");
@@ -186,20 +187,12 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
 
   const total = useMemo(() => linhas.reduce((acc, l) => acc + l.valorVenda * l.quantidade, 0), [linhas]);
 
-  const produtosFiltrados = useMemo(
-    () => products.filter((p) => p.nome?.toLowerCase().includes(busca.toLowerCase())),
-    [products, busca],
-  );
+  const produtosFiltrados = useMemo(() => products.filter((p) => p.nome?.toLowerCase().includes(busca.toLowerCase())), [products, busca]);
 
   const totalPago = payments.reduce((acc, { value }) => acc + Number(value), 0);
   const pendente = Math.max(total - totalPago, 0);
 
-  const formaPagamento =
-    payments.length > 0
-      ? payments.every(({ type }) => type === payments[0].type)
-        ? payments[0].type
-        : "Misto"
-      : "Não consta";
+  const formaPagamento = payments.length > 0 ? (payments.every(({ type }) => type === payments[0].type) ? payments[0].type : "Misto") : "Não consta";
 
   const salvarDesabilitado = !clienteFinal || linhas.length === 0;
   const statusPedido = pedidoInfo?.pedido.pedidoStatus;
@@ -223,13 +216,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
       >
         <div className="space-y-3">
           <div className="relative">
-            <input
-              autoFocus
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              placeholder="Digite o nome do produto..."
-              className="h-11 w-full rounded-lg border border-white/10 bg-white/[0.06] pl-9 pr-3 text-sm text-[#e8e4ff] placeholder-[#8a85b4] outline-none focus:border-[#5dcaa5]"
-            />
+            <input autoFocus value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Digite o nome do produto..." className="h-11 w-full rounded-lg border border-white/10 bg-white/[0.06] pl-9 pr-3 text-sm text-[#e8e4ff] placeholder-[#8a85b4] outline-none focus:border-[#5dcaa5]" />
             <PackageSearch size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a85b4]" />
           </div>
 
@@ -239,10 +226,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
             ) : (
               produtosFiltrados.map((produto) => (
                 <li key={String(produto.id)}>
-                  <button
-                    onClick={() => adicionarProduto(produto)}
-                    className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/[0.07] active:bg-white/[0.12]"
-                  >
+                  <button onClick={() => adicionarProduto(produto)} className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/[0.07] active:bg-white/[0.12]">
                     <span className="min-w-0 truncate text-sm text-[#e8e4ff]">{produto.nome}</span>
                     <span className="flex flex-shrink-0 items-center gap-2">
                       <span className="text-xs text-[#8a85b4]">{formatCurrency(Number(produto.valorVenda) || 0)}</span>
@@ -257,21 +241,11 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
       </Modal>
 
       {/* ============ MODAL: PAGAMENTOS ============ */}
-      <Modal
-        open={modalPagamentos}
-        onClose={() => setModalPagamentos(false)}
-        title="Pagamentos"
-        subtitle="Lance os pagamentos recebidos"
-        accent="#7c6ef5"
-      >
+      <Modal open={modalPagamentos} onClose={() => setModalPagamentos(false)} title="Pagamentos" subtitle="Lance os pagamentos recebidos" accent="#7c6ef5">
         <div className="space-y-4">
           <div className="space-y-2">
             <div className="relative">
-              <select
-                value={tipoPagamento}
-                onChange={(e) => setTipoPagamento(e.target.value)}
-                className="h-11 w-full appearance-none rounded-lg border border-white/10 bg-white/[0.06] pl-9 pr-3 text-sm text-[#e8e4ff] outline-none focus:border-[#7c6ef5]"
-              >
+              <select value={tipoPagamento} onChange={(e) => setTipoPagamento(e.target.value)} className="h-11 w-full appearance-none rounded-lg border border-white/10 bg-white/[0.06] pl-9 pr-3 text-sm text-[#e8e4ff] outline-none focus:border-[#7c6ef5]">
                 <option disabled value="" className="text-gray-800">
                   Tipo de pagamento
                 </option>
@@ -281,10 +255,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
                   </option>
                 ))}
               </select>
-              <CreditCard
-                size={16}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8a85b4]"
-              />
+              <CreditCard size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8a85b4]" />
             </div>
 
             <div className="flex gap-2">
@@ -302,11 +273,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
                 <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a85b4]" />
               </div>
 
-              <button
-                onClick={handleAdicionarPagamento}
-                disabled={!tipoPagamento || valorPagamento <= 0}
-                className="grid h-11 w-12 flex-shrink-0 place-items-center rounded-lg bg-[#7c6ef5] text-white transition hover:bg-[#8d80f7] disabled:cursor-not-allowed disabled:opacity-40"
-              >
+              <button onClick={handleAdicionarPagamento} disabled={!tipoPagamento || valorPagamento <= 0} className="grid h-11 w-12 flex-shrink-0 place-items-center rounded-lg bg-[#7c6ef5] text-white transition hover:bg-[#8d80f7] disabled:cursor-not-allowed disabled:opacity-40">
                 <Plus size={16} />
               </button>
             </div>
@@ -320,10 +287,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
           ) : (
             <ul className="max-h-60 space-y-2 overflow-y-auto">
               {payments.map(({ type, value, date }, index) => (
-                <li
-                  key={`${type}-${index}-${value}`}
-                  className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.04] p-3"
-                >
+                <li key={`${type}-${index}-${value}`} className="flex items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.04] p-3">
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-white/[0.06]">
                       <Receipt size={15} className="text-[#8a85b4]" />
@@ -336,10 +300,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
 
                   <div className="flex flex-shrink-0 items-center gap-2">
                     <span className="text-sm text-[#e8e4ff]">{formatCurrency(value)}</span>
-                    <button
-                      onClick={() => removerPagamento(index)}
-                      className="grid h-6 w-6 place-items-center rounded-md text-[#8a85b4] transition-colors hover:bg-white/[0.1] hover:text-[#f09595]"
-                    >
+                    <button onClick={() => removerPagamento(index)} className="grid h-6 w-6 place-items-center rounded-md text-[#8a85b4] transition-colors hover:bg-white/[0.1] hover:text-[#f09595]">
                       <X size={13} />
                     </button>
                   </div>
@@ -355,35 +316,20 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
             </div>
             <div className="text-right">
               <span className="block text-xs text-[#8a85b4]">Pendente</span>
-              <span className={`text-sm ${pendente > 0 ? "text-[#fac775]" : "text-[#5dcaa5]"}`}>
-                {formatCurrency(pendente)}
-              </span>
+              <span className={`text-sm ${pendente > 0 ? "text-[#fac775]" : "text-[#5dcaa5]"}`}>{formatCurrency(pendente)}</span>
             </div>
           </div>
         </div>
       </Modal>
 
       {/* ============ MODAL: EXCLUIR NOTA ============ */}
-      <Modal
-        open={modalExcluir}
-        onClose={() => setModalExcluir(false)}
-        title="Excluir nota"
-        subtitle="Essa ação não pode ser desfeita"
-        accent="#f09595"
-        maxWidth="max-w-sm"
-      >
+      <Modal open={modalExcluir} onClose={() => setModalExcluir(false)} title="Excluir nota" subtitle="Essa ação não pode ser desfeita" accent="#f09595" maxWidth="max-w-sm">
         <p className="text-sm text-[#c9c4ef]">Deseja realmente excluir esta nota?</p>
         <div className="mt-5 flex justify-end gap-2">
-          <button
-            onClick={() => setModalExcluir(false)}
-            className="h-10 rounded-lg bg-white/[0.06] px-4 text-sm text-[#e8e4ff] transition-colors hover:bg-white/[0.12]"
-          >
+          <button onClick={() => setModalExcluir(false)} className="h-10 rounded-lg bg-white/[0.06] px-4 text-sm text-[#e8e4ff] transition-colors hover:bg-white/[0.12]">
             Cancelar
           </button>
-          <button
-            onClick={handleExcluirNota}
-            className="h-10 rounded-lg bg-[#a22d2d] px-4 text-sm text-white transition-colors hover:bg-[#c53737]"
-          >
+          <button onClick={handleExcluirNota} className="h-10 rounded-lg bg-[#a22d2d] px-4 text-sm text-white transition-colors hover:bg-[#c53737]">
             Excluir
           </button>
         </div>
@@ -395,62 +341,28 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] bg-white/[0.02] px-3 py-2">
           <div className="flex min-w-0 items-center gap-2">
             {statusPedido ? (
-              <span
-                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] ring-1 ${
-                  STATUS_STYLE[statusPedido] ?? "bg-white/[0.06] text-[#8a85b4] ring-white/[0.08]"
-                }`}
-              >
-                {statusPedido}
-              </span>
+              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] ring-1 ${STATUS_STYLE[statusPedido] ?? "bg-white/[0.06] text-[#8a85b4] ring-white/[0.08]"}`}>{statusPedido}</span>
             ) : (
-              <span className="inline-flex items-center rounded-full bg-[#7c6ef5]/[0.15] px-2.5 py-0.5 text-[11px] text-[#9b8ff5] ring-1 ring-[#7c6ef5]/25">
-                NOVA NOTA
-              </span>
+              <span className="inline-flex items-center rounded-full bg-[#7c6ef5]/[0.15] px-2.5 py-0.5 text-[11px] text-[#9b8ff5] ring-1 ring-[#7c6ef5]/25">NOVA NOTA</span>
             )}
-            {pedidoInfo && (
-              <span className="hidden truncate text-xs text-[#6b66a0] sm:inline">
-                #{pedidoInfo.pedido.pedidoId.slice(0, 8)}
-              </span>
-            )}
+            {pedidoInfo && <span className="hidden truncate text-xs text-[#6b66a0] sm:inline">#{pedidoInfo.pedido.pedidoId.slice(0, 8)}</span>}
           </div>
 
           <div className="flex items-center gap-1.5">
-            <button
-              title="Adicionar produto"
-              onClick={() => setModalProdutos(true)}
-              className={`${botaoToolbar} bg-[#5dcaa5]/[0.15] text-[#5dcaa5] hover:bg-[#5dcaa5] hover:text-white`}
-            >
+            <button title="Adicionar produto" onClick={() => setModalProdutos(true)} className={`${botaoToolbar} bg-[#5dcaa5]/[0.15] text-[#5dcaa5] hover:bg-[#5dcaa5] hover:text-white`}>
               <PackageSearch size={20} />
             </button>
 
-            <button
-              title="Pagamentos"
-              onClick={() => setModalPagamentos(true)}
-              className={`relative ${botaoToolbar} bg-[#7c6ef5]/[0.15] text-[#9b8ff5] hover:bg-[#7c6ef5] hover:text-white`}
-            >
+            <button title="Pagamentos" onClick={() => setModalPagamentos(true)} className={`relative ${botaoToolbar} bg-[#7c6ef5]/[0.15] text-[#9b8ff5] hover:bg-[#7c6ef5] hover:text-white`}>
               <Wallet size={20} />
-              {total > 0 && pendente > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-[#fac775] ring-2 ring-[#15132a]" />
-              )}
+              {total > 0 && pendente > 0 && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-[#fac775] ring-2 ring-[#15132a]" />}
             </button>
 
-            <button
-              title="Baixar nota"
-              onClick={() => handleDownload(notaRef)}
-              className={`${botaoToolbar} bg-[#c084fc]/[0.15] text-[#c084fc] hover:bg-[#c084fc] hover:text-white`}
-            >
+            <button title="Baixar nota" onClick={() => handleDownload(notaRef)} className={`${botaoToolbar} bg-[#c084fc]/[0.15] text-[#c084fc] hover:bg-[#c084fc] hover:text-white`}>
               <Download size={20} />
             </button>
 
-            <button
-              title="Excluir nota"
-              onClick={() =>
-                id
-                  ? setModalExcluir(true)
-                  : alert.warning("Nota não salva", "Essa nota ainda não foi salva no sistema.")
-              }
-              className={`${botaoToolbar} bg-[#f09595]/[0.15] text-[#f09595] hover:bg-[#a22d2d] hover:text-white`}
-            >
+            <button title="Excluir nota" onClick={() => (id ? setModalExcluir(true) : alert.warning("Nota não salva", "Essa nota ainda não foi salva no sistema."))} className={`${botaoToolbar} bg-[#f09595]/[0.15] text-[#f09595] hover:bg-[#a22d2d] hover:text-white`}>
               <Trash2 size={20} />
             </button>
           </div>
@@ -500,12 +412,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
                     <tbody>
                       {linhas.length > 0 ? (
                         linhas.map((linha, i) => (
-                          <tr
-                            key={linha.uid}
-                            className={`border-b border-white/[0.06] transition-colors duration-150 hover:bg-[#7c6ef5]/[0.08] ${
-                              i % 2 === 0 ? "bg-transparent" : "bg-white/[0.02]"
-                            }`}
-                          >
+                          <tr key={linha.uid} className={`border-b border-white/[0.06] transition-colors duration-150 hover:bg-[#7c6ef5]/[0.08] ${i % 2 === 0 ? "bg-transparent" : "bg-white/[0.02]"}`}>
                             <td className="max-w-[280px] p-2 align-middle">
                               <p className="truncate text-[#e8e4ff]" title={linha.nome}>
                                 {linha.nome}
@@ -526,22 +433,13 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
                               />
                             </td>
                             <td className="p-2 align-middle">
-                              <CurrencyInput
-                                value={linha.valorVenda * 100}
-                                onChange={(cents) => atualizarLinha(linha.uid, { valorVenda: cents / 100 })}
-                              />
+                              <CurrencyInput value={linha.valorVenda * 100} onChange={(cents) => atualizarLinha(linha.uid, { valorVenda: cents / 100 })} />
                             </td>
                             <td className="p-2 align-middle">
-                              <p className="flex h-10 items-center rounded-md bg-white/[0.03] px-2 text-[#e8e4ff] ring-1 ring-white/[0.08]">
-                                {formatCurrency(linha.valorVenda * linha.quantidade)}
-                              </p>
+                              <p className="flex h-10 items-center rounded-md bg-white/[0.03] px-2 text-[#e8e4ff] ring-1 ring-white/[0.08]">{formatCurrency(linha.valorVenda * linha.quantidade)}</p>
                             </td>
                             <td className="p-2 text-center align-middle">
-                              <button
-                                title="Remover produto"
-                                onClick={() => removerProduto(linha.uid)}
-                                className="grid h-9 w-9 place-items-center rounded-lg text-[#6b66a0] transition-colors hover:bg-[#a22d2d]/25 hover:text-[#f09595]"
-                              >
+                              <button title="Remover produto" onClick={() => removerProduto(linha.uid)} className="grid h-9 w-9 place-items-center rounded-lg text-[#6b66a0] transition-colors hover:bg-[#a22d2d]/25 hover:text-[#f09595]">
                                 <Trash2 size={16} />
                               </button>
                             </td>
@@ -551,10 +449,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
                         <tr>
                           <td colSpan={5} className="py-10 text-center text-[#8a85b4]">
                             <p>Adicione produtos à nota</p>
-                            <button
-                              onClick={() => setModalProdutos(true)}
-                              className="mt-3 inline-flex items-center gap-2 rounded-lg border border-dashed border-white/[0.15] px-4 py-2 text-sm text-[#8a85b4] transition-colors hover:border-[#5dcaa5] hover:text-[#5dcaa5]"
-                            >
+                            <button onClick={() => setModalProdutos(true)} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-dashed border-white/[0.15] px-4 py-2 text-sm text-[#8a85b4] transition-colors hover:border-[#5dcaa5] hover:text-[#5dcaa5]">
                               <Plus size={16} /> Adicionar produto
                             </button>
                           </td>
@@ -576,10 +471,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
                         <p className="text-sm leading-snug text-[#e8e4ff]">{linha.nome}</p>
                         <p className="mt-0.5 truncate text-[11px] text-[#6b66a0]">{linha.produtoId}</p>
                       </div>
-                      <button
-                        onClick={() => removerProduto(linha.uid)}
-                        className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-[#a22d2d]/25 text-[#f09595] transition-colors active:bg-[#a22d2d]/40"
-                      >
+                      <button onClick={() => removerProduto(linha.uid)} className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-[#a22d2d]/25 text-[#f09595] transition-colors active:bg-[#a22d2d]/40">
                         <Trash2 size={15} />
                       </button>
                     </div>
@@ -602,31 +494,21 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
                       </div>
                       <div>
                         <label className="mb-1 block text-[11px] text-[#8a85b4]">Valor unitário</label>
-                        <CurrencyInput
-                          value={linha.valorVenda * 100}
-                          onChange={(cents) => atualizarLinha(linha.uid, { valorVenda: cents / 100 })}
-                        />
+                        <CurrencyInput value={linha.valorVenda * 100} onChange={(cents) => atualizarLinha(linha.uid, { valorVenda: cents / 100 })} />
                       </div>
                     </div>
 
                     <div className="mt-3 flex items-center justify-between rounded-md bg-white/[0.03] px-3 py-2">
                       <span className="text-xs text-[#8a85b4]">Subtotal</span>
-                      <span className="text-sm text-[#e8e4ff]">
-                        {formatCurrency(linha.valorVenda * linha.quantidade)}
-                      </span>
+                      <span className="text-sm text-[#e8e4ff]">{formatCurrency(linha.valorVenda * linha.quantidade)}</span>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="rounded-lg border border-dashed border-white/[0.15] py-10 text-center text-sm text-[#8a85b4]">
-                  Adicione produtos à nota
-                </div>
+                <div className="rounded-lg border border-dashed border-white/[0.15] py-10 text-center text-sm text-[#8a85b4]">Adicione produtos à nota</div>
               )}
 
-              <button
-                onClick={() => setModalProdutos(true)}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-white/[0.15] py-3 text-sm text-[#8a85b4] transition-colors active:border-[#5dcaa5] active:text-[#5dcaa5]"
-              >
+              <button onClick={() => setModalProdutos(true)} className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-white/[0.15] py-3 text-sm text-[#8a85b4] transition-colors active:border-[#5dcaa5] active:text-[#5dcaa5]">
                 <Plus size={16} /> Adicionar produto
               </button>
             </div>
@@ -654,23 +536,9 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
                   <span className={valorResumo}>{formatCurrency(totalPago)}</span>
                 </div>
 
-                <div
-                  className={`rounded-lg border p-3 ${
-                    pendente > 0 ? "border-[#fac775]/25 bg-[#ba7517]/[0.15]" : "border-[#5dcaa5]/25 bg-[#0f6e56]/[0.15]"
-                  }`}
-                >
-                  <span
-                    className={`block text-[11px] uppercase tracking-wide ${
-                      pendente > 0 ? "text-[#fac775]" : "text-[#5dcaa5]"
-                    }`}
-                  >
-                    Pendente
-                  </span>
-                  <span
-                    className={`mt-0.5 block truncate text-sm ${pendente > 0 ? "text-[#fac775]" : "text-[#5dcaa5]"}`}
-                  >
-                    {formatCurrency(pendente)}
-                  </span>
+                <div className={`rounded-lg border p-3 ${pendente > 0 ? "border-[#fac775]/25 bg-[#ba7517]/[0.15]" : "border-[#5dcaa5]/25 bg-[#0f6e56]/[0.15]"}`}>
+                  <span className={`block text-[11px] uppercase tracking-wide ${pendente > 0 ? "text-[#fac775]" : "text-[#5dcaa5]"}`}>Pendente</span>
+                  <span className={`mt-0.5 block truncate text-sm ${pendente > 0 ? "text-[#fac775]" : "text-[#5dcaa5]"}`}>{formatCurrency(pendente)}</span>
                 </div>
 
                 <div className="rounded-lg border border-white/[0.08] bg-white/[0.03] p-3">

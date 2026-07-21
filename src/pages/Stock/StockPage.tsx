@@ -15,17 +15,17 @@ import ProductType from "../../types/ProductType";
 import ProductService from "../../services/product.service";
 import { ProductForm } from "./components/Form/product.form";
 import { ProductFormData } from "./components/Schema/product.schema";
-import { Modal } from "../../components/Modals/Modal";
+import { Modal } from "../../components/Modal";
+import HeaderPage from "../../components/Headers/HeaderPage";
 import { useAlert } from "../../components/Alert/Alert";
 import { formatNumber, toPercent } from "../../utils/format";
 
 const SEARCH_DEBOUNCE = 250;
 const LOW_STOCK = 5;
 
-// Paginação dinâmica: calcula quantas linhas cabem na altura disponível
 const ROW_HEIGHT = 63.3; // altura de cada linha em px (deve ficar >= altura visual real)
-const MIN_PER_PAGE = 5; // mínimo pra viewport pequena
-const FALLBACK_PER_PAGE = 10; // enquanto o corpo não foi medido
+const MIN_PER_PAGE = 5; 
+const FALLBACK_PER_PAGE = 10;
 
 type ModalType = "registrar" | "editar" | "entrada" | "saida" | null;
 
@@ -237,19 +237,12 @@ const Estoque = () => {
     <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#0e0d1a] text-[#e8e4ff]">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(124,110,245,0.16),transparent_70%)]" />
 
-      <header className="relative z-20 shrink-0 border-b border-white/[0.07] bg-[#0e0d1a]/80 backdrop-blur-xl">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 lg:px-8">
-          <div className="flex items-center gap-3.5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#7c6ef5]/25 bg-gradient-to-br from-[#7c6ef5]/25 to-[#a78bfa]/10">
-              <Tags className="h-5 w-5 text-[#b7aef9]" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold tracking-tight text-[#f1eeff]">Estoque</h1>
-              <p className="text-xs text-[#6f6a93]">
-                {formatNumber(stats.total)} {stats.total === 1 ? "produto cadastrado" : "produtos cadastrados"}
-              </p>
-            </div>
-          </div>
+      {/* Cabeçalho — componente compartilhado */}
+      <HeaderPage
+        icon={<Tags className="h-5 w-5" />}
+        title="Estoque"
+        subtitle={`${formatNumber(stats.total)} ${stats.total === 1 ? "produto cadastrado" : "produtos cadastrados"}`}
+        actions={
           <button
             onClick={() => setModal("registrar")}
             className="flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-br from-[#7c6ef5] to-[#8b7bf7] px-4 py-2.5 text-[13px] font-medium text-white shadow-[0_8px_24px_-8px_rgba(124,110,245,0.7)] transition-all hover:brightness-110 active:scale-[0.98]"
@@ -257,8 +250,8 @@ const Estoque = () => {
             <PackagePlus className="h-4 w-4" />
             Novo produto
           </button>
-        </div>
-      </header>
+        }
+      />
 
       {/* Conteúdo — ocupa o resto exato da viewport */}
       <main className="relative flex min-h-0 flex-1 flex-col gap-5 overflow-hidden px-5 py-5 lg:px-8 lg:py-6">

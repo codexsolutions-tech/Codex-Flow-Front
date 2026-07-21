@@ -56,7 +56,7 @@ const Modal = memo(
     return (
       <div
         onClick={onClose}
-        className={`fixed inset-0 z-[100] flex justify-center bg-[#0a0914]/75 backdrop-blur-md transition-opacity duration-200
+        className={`fixed inset-0 z-[200] flex justify-center bg-[#0a0914]/75 backdrop-blur-md transition-opacity duration-200
           ${isFull ? "items-stretch p-0 sm:items-center sm:p-6" : "items-end p-0 sm:items-center sm:p-4"}
           ${show ? "opacity-100" : "opacity-0"}`}
       >

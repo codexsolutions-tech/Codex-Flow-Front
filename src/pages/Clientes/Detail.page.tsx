@@ -1,20 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  ChevronLeft,
-  Pencil,
-  FileText,
-  MessageCircle,
-  Mail,
-  CalendarDays,
-  Loader2,
-  AlertTriangle,
-  PhoneCall,
-  Receipt,
-  Wallet,
-  ShoppingBag,
-  TrendingUp,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Pencil, FileText, MessageCircle, Mail, CalendarDays, Loader2, AlertTriangle, PhoneCall, Receipt, Wallet, ShoppingBag, TrendingUp, Users } from "lucide-react";
+
+import HeaderPage from "../../components/Headers/HeaderPage";
+import { Modal } from "../../components/Modal";
+import Invoice from "../../components/Invoice/Invoice";
 
 import CustomerService from "../../services/client.service";
 import NoteService from "../../services/note.service";
@@ -28,32 +19,97 @@ import ClienteEditForm from "./Components/Form/cliente-edit.form";
 import { ClienteFormData } from "./Components/Schema/cliente.schema";
 import ClienteSalesChart from "./Components/Chart/ClientesSalesChart";
 
+const ITEMS_PER_PAGE = 6;
+
+const horaPedido = (data?: string | Date) => (data ? new Date(data).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "--:--");
+
+/* -------------------------------------------------------------------------- */
+/*  Sub-componentes                                                            */
+/* -------------------------------------------------------------------------- */
+
 const StatusBadge = ({ status }: { status: eStatus }) =>
   status === eStatus.ATIVO ? (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0f6e56]/40 bg-[#0f6e56]/20 px-2.5 py-1 text-[11px] font-medium text-[#5dcaa5]">
-      <span className="h-1.5 w-1.5 rounded-full bg-[#5dcaa5]" /> Ativo
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-success/40 bg-success/15 px-2.5 py-0.5 text-[11px] font-medium text-success">
+      <span className="h-1.5 w-1.5 rounded-full bg-success" /> Ativo
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] px-2.5 py-1 text-[11px] font-medium text-[#8a85b4]">
-      <span className="h-1.5 w-1.5 rounded-full bg-[#6f6a93]" /> Inativo
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-fg/[0.08] bg-fg/[0.04] px-2.5 py-0.5 text-[11px] font-medium text-mist">
+      <span className="h-1.5 w-1.5 rounded-full bg-faint" /> Inativo
     </span>
   );
 
-const PEDIDO_STATUS: Record<string, { label: string; cls: string }> = {
-  ABERTO: { label: "Aberto", cls: "border-[#8a6d1f]/50 bg-[#8a6d1f]/20 text-[#e0b955]" },
-  FECHADO: { label: "Fechado", cls: "border-[#0f6e56]/40 bg-[#0f6e56]/20 text-[#5dcaa5]" },
-  CANCELADO: { label: "Cancelado", cls: "border-[#a22d2d]/40 bg-[#a22d2d]/20 text-[#f09595]" },
+const PedidoStatusBadge = ({ status }: { status?: string }) => {
+  if (status === "ABERTO")
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-warning/50 bg-warning/20 px-2.5 py-1 text-[11px] font-medium text-warning">
+        <span className="h-1.5 w-1.5 rounded-full bg-warning" /> Aberto
+      </span>
+    );
+  if (status === "CANCELADO")
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-danger/40 bg-danger/20 px-2.5 py-1 text-[11px] font-medium text-danger">
+        <span className="h-1.5 w-1.5 rounded-full bg-danger" /> Cancelado
+      </span>
+    );
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-success/40 bg-success/20 px-2.5 py-1 text-[11px] font-medium text-success">
+      <span className="h-1.5 w-1.5 rounded-full bg-success" /> Fechado
+    </span>
+  );
 };
 
-const StatCard = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
-  <div className="rounded-2xl border border-white/[0.07] bg-[#15132a] p-4">
-    <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-[#7c6ef5]/[0.15] text-[#9b8ff5]">
-      {icon}
-    </div>
-    <p className="text-[11px] uppercase tracking-wide text-[#6b6790]">{label}</p>
-    <p className="mt-0.5 truncate text-lg font-semibold tracking-tight text-[#f1eeff] tabular-nums">{value}</p>
+const StatCard = ({ icon, label, value }: { icon: ReactNode; label: string; value: string }) => (
+  <div className="rounded-2xl border border-fg/[0.07] bg-surface p-4 transition-colors hover:border-fg/[0.12]">
+    <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-xl bg-accent/[0.14] text-accent-soft ring-1 ring-inset ring-accent/20">{icon}</div>
+    <p className="text-[11px] uppercase tracking-[0.1em] text-faint">{label}</p>
+    <p className="mt-1 truncate text-xl font-semibold tabular-nums tracking-tight text-ink">{value}</p>
   </div>
 );
+
+const SectionHead = ({ icon, title, meta }: { icon: ReactNode; title: string; meta?: string }) => (
+  <div className="flex items-center gap-3 border-b border-fg/[0.07] px-5 py-3.5">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/[0.14] text-accent-soft ring-1 ring-inset ring-accent/20">{icon}</div>
+    <div className="min-w-0">
+      <h2 className="text-[13px] font-semibold text-ink">{title}</h2>
+      {meta && <p className="text-[11px] text-faint">{meta}</p>}
+    </div>
+  </div>
+);
+
+const ContactRow = ({ icon, value, tone = "accent" }: { icon: ReactNode; value: string; tone?: "accent" | "success" | "info" }) => {
+  const toneCls = tone === "success" ? "bg-success/15 text-success" : tone === "info" ? "bg-[#4aa8ff]/15 text-[#a9d6ff]" : "bg-accent/[0.14] text-accent-soft";
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-fg/[0.05] bg-fg/[0.02] px-3 py-2.5 text-[13px] text-mist">
+      <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${toneCls}`}>{icon}</span>
+      <span className="truncate">{value}</span>
+    </div>
+  );
+};
+
+const QuickAction = ({ icon, label, href, tone = "accent" }: { icon: ReactNode; label: string; href?: string; tone?: "accent" | "success" | "info" }) => {
+  const toneCls = tone === "success" ? "bg-success/15 text-success" : tone === "info" ? "bg-[#4aa8ff]/15 text-[#a9d6ff]" : "bg-accent/[0.15] text-accent-soft";
+
+  const handleClick = () => {
+    if (!href) return;
+    if (tone === "success") window.open(href, "_blank", "noreferrer");
+    else window.location.href = href;
+  };
+
+  return (
+    <button type="button" onClick={handleClick} disabled={!href} className="group flex items-center gap-3 rounded-xl border border-fg/[0.06] bg-fg/[0.01] px-4 py-3 text-left transition-colors hover:border-fg/[0.12] hover:bg-fg/[0.04] disabled:cursor-not-allowed disabled:opacity-50">
+      <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${toneCls}`}>{icon}</span>
+      <span className="flex-1 text-sm font-medium text-ink">{label}</span>
+      <ChevronRight size={16} className="text-muted transition-colors group-hover:text-accent-soft" />
+    </button>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/*  Página                                                                     */
+/* -------------------------------------------------------------------------- */
+
+type PedidoAberto = { id?: string; clienteId: string; nome?: string };
 
 const ClienteDetalhe = () => {
   const params = useParams();
@@ -68,8 +124,7 @@ const ClienteDetalhe = () => {
   const [showEdit, setShowEdit] = useState(false);
   const [saving, setSaving] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-
-  const ITEMS_PER_PAGE = 5;
+  const [pedidoAberto, setPedidoAberto] = useState<PedidoAberto | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -93,7 +148,7 @@ const ClienteDetalhe = () => {
       try {
         const pres = await NoteService.getAll();
         const all = pres.data?.data ?? [];
-        setPedidos(all.filter((p) => String(p.clienteId) === String(found.id)));
+        setPedidos((all as PedidoClienteType[]).filter((p) => String(p.clienteId) === String(found.id)));
       } catch {
         setPedidos([]);
       }
@@ -122,6 +177,20 @@ const ClienteDetalhe = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const abrirPedido = (p: PedidoClienteType) => {
+    if (!client?.id) return;
+    setPedidoAberto({
+      id: p.pedido?.pedidoId,
+      clienteId: String(client.id),
+      nome: client.nome,
+    });
+  };
+
+  const fecharPedido = () => {
+    setPedidoAberto(null);
+    load();
   };
 
   const stats = useMemo(() => {
@@ -165,9 +234,9 @@ const ClienteDetalhe = () => {
     });
     const total = pedidos.length || 1;
     return [
-      { key: "FECHADO", label: "Fechados", color: "#5dcaa5", count: c.FECHADO, pct: (c.FECHADO / total) * 100 },
-      { key: "ABERTO", label: "Abertos", color: "#e0b955", count: c.ABERTO, pct: (c.ABERTO / total) * 100 },
-      { key: "CANCELADO", label: "Cancelados", color: "#f09595", count: c.CANCELADO, pct: (c.CANCELADO / total) * 100 },
+      { key: "FECHADO", label: "Fechados", color: "rgb(93 202 165)", count: c.FECHADO, pct: (c.FECHADO / total) * 100 },
+      { key: "ABERTO", label: "Abertos", color: "rgb(250 199 117)", count: c.ABERTO, pct: (c.ABERTO / total) * 100 },
+      { key: "CANCELADO", label: "Cancelados", color: "rgb(240 149 149)", count: c.CANCELADO, pct: (c.CANCELADO / total) * 100 },
     ];
   }, [pedidos]);
 
@@ -181,240 +250,208 @@ const ClienteDetalhe = () => {
     [pedidos],
   );
 
-  const totalPages = Math.ceil(pedidosOrdenados.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(pedidosOrdenados.length / ITEMS_PER_PAGE));
   const currentPedidos = pedidosOrdenados.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const emptyRows = Math.max(0, ITEMS_PER_PAGE - currentPedidos.length);
 
   const waDigits = onlyDigits(client?.contato?.whatsapp ?? "");
   const telDigits = onlyDigits(client?.contato?.telefone ?? client?.contato?.celular ?? "");
   const email = client?.contato?.email;
 
+  /* ------------------------------- Header ------------------------------- */
+
+  const headerActions = (
+    <div className="flex items-center gap-2">
+      <button onClick={() => navigate("/clientes")} className="flex h-9 items-center gap-1.5 rounded-xl border border-fg/[0.08] bg-fg/[0.04] px-3 text-[13px] text-mist transition-colors hover:bg-fg/[0.08] hover:text-ink">
+        <ChevronLeft className="h-4 w-4" /> Voltar
+      </button>
+
+      {client && (
+        <button onClick={() => setShowEdit(true)} className="flex h-9 items-center gap-1.5 rounded-xl border border-accent/40 bg-accent/[0.14] px-3 text-[13px] font-medium text-accent-soft transition-all hover:bg-accent/25 active:scale-95">
+          <Pencil className="h-4 w-4" /> Editar
+        </button>
+      )}
+    </div>
+  );
+
+  const headerIcon = client ? <div className="flex h-full w-full items-center justify-center rounded-xl bg-gradient-to-br from-accent/30 to-accent-soft/10 text-[13px] font-semibold text-accent-soft ring-1 ring-accent/25">{getInitials(client.nome)}</div> : <Users size={22} />;
+
+  /* ------------------------------- Render ------------------------------- */
+
   return (
-    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#0e0d1a] text-[#e8e4ff]">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(124,110,245,0.16),transparent_70%)]" />
+    <div className="relative flex h-full w-full flex-col overflow-hidden bg-canvas text-ink">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(60%_100%_at_50%_0%,rgb(var(--accent)/0.14),transparent_70%)]" />
 
-      <header className="relative z-20 shrink-0 border-b border-white/[0.07] bg-[#0e0d1a]/80 backdrop-blur-xl">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 lg:px-8">
-          <div className="flex min-w-0 items-center gap-3">
-            <button
-              onClick={() => navigate("/clientes")}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-[#b7b2d8] hover:bg-white/[0.08]"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#7c6ef5]/25 bg-gradient-to-br from-[#7c6ef5]/25 to-[#a78bfa]/10 text-[13px] font-semibold text-[#b7aef9]">
-              {client ? getInitials(client.nome) : "…"}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="truncate text-lg font-semibold tracking-tight text-[#f1eeff]">
-                  {client?.nome ?? "Cliente"}
-                </h1>
-              </div>
-              <p className="truncate text-xs text-[#6f6a93]">
-                {client?.cpfCnpj ? formatDocument(client.cpfCnpj) : "—"}
-              </p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <HeaderPage title={client?.nome ?? "Cliente"} subtitle={client?.cpfCnpj ? formatDocument(client.cpfCnpj) : "—"} icon={headerIcon} actions={headerActions} />
 
-      <main className="relative flex-1 overflow-hidden px-2 py-4 lg:px-4 lg:py-3">
+      <main className="relative z-10 flex-1 overflow-y-auto px-5 py-6 lg:px-8">
         {loading ? (
           <div className="flex h-full items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-[#6f6a93]" />
+            <Loader2 className="h-6 w-6 animate-spin text-faint" />
           </div>
         ) : error ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-            <AlertTriangle className="h-8 w-8 text-[#f09595]" />
-            <p className="text-[#f0a5a5]">{error}</p>
-            <button onClick={load} className="mt-4 rounded-lg bg-white/[0.08] px-4 py-2 text-sm hover:bg-white/[0.15]">
+            <AlertTriangle className="h-8 w-8 text-danger" />
+            <p className="text-danger">{error}</p>
+            <button onClick={load} className="mt-2 rounded-lg border border-fg/[0.1] bg-fg/[0.05] px-4 py-2 text-sm text-ink transition-colors hover:bg-fg/[0.1]">
               Tentar novamente
             </button>
           </div>
         ) : (
-          <div className="grid h-full grid-cols-1 gap-4 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+            {/* Coluna principal */}
             <div className="flex flex-col gap-4 xl:col-span-2">
-              {/* Stats */}
+              {/* Indicadores */}
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <StatCard icon={<Wallet size={16} />} label="Total em pedidos" value={formatCurrency(stats.total)} />
                 <StatCard icon={<ShoppingBag size={16} />} label="Pedidos" value={formatNumber(stats.count)} />
                 <StatCard icon={<TrendingUp size={16} />} label="Ticket médio" value={formatCurrency(stats.ticket)} />
-                <StatCard
-                  icon={<CalendarDays size={16} />}
-                  label="Último pedido"
-                  value={stats.ultimo ? formatDate(stats.ultimo) : "—"}
-                />
+                <StatCard icon={<CalendarDays size={16} />} label="Último pedido" value={stats.ultimo ? formatDate(stats.ultimo) : "—"} />
               </div>
 
-              {/* Vendas Chart */}
-              <div className="flex flex-col rounded-2xl border border-white/[0.07] bg-[#15132a]">
-                <div className="border-b border-white/[0.07] bg-white/[0.02] px-5 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-xl bg-[#7c6ef5]/[0.15] p-2">
-                      <TrendingUp className="h-4 w-4 text-[#9b8ff5]" />
-                    </div>
-                    <div>
-                      <h2 className="text-[13px] font-medium text-[#e8e4ff]">Vendas (6 meses)</h2>
-                      <p className="text-[11px] text-[#6f6a93]">Total por mês</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex-1 p-4 min-h-[280px]">
+              {/* Gráfico */}
+              <div className="overflow-hidden rounded-2xl border border-fg/[0.07] bg-surface">
+                <SectionHead icon={<TrendingUp className="h-4 w-4" />} title="Vendas" meta="Últimos 6 meses" />
+                <div className="h-[280px] p-4">
                   <ClienteSalesChart monthlyData={monthly} />
                 </div>
               </div>
 
-              {/* Pedidos */}
-              <div className="flex flex-col rounded-2xl border border-white/[0.07] bg-[#15132a] flex-1">
-                <div className="border-b border-white/[0.06] px-5 py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-xl bg-[#7c6ef5]/[0.15] p-2">
-                      <Receipt className="h-4 w-4 text-[#9b8ff5]" />
-                    </div>
-                    <div>
-                      <h2 className="text-[13px] font-medium">Pedidos</h2>
-                      <p className="text-[11px] text-[#6f6a93]">{pedidos.length} pedidos</p>
-                    </div>
-                  </div>
-                </div>
+              {/* Pedidos — estilo PDV */}
+              <div className="flex flex-col overflow-hidden rounded-2xl border border-fg/[0.07] bg-surface">
+                <SectionHead icon={<Receipt className="h-4 w-4" />} title="Pedidos" meta={`${pedidos.length} ${pedidos.length === 1 ? "pedido" : "pedidos"} no total`} />
 
-                <div className="flex-1 overflow-auto">
+                <div>
                   {pedidosOrdenados.length === 0 ? (
-                    <div className="flex h-full items-center justify-center text-[#6f6a93]">
-                      Nenhum pedido encontrado
+                    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-fg/[0.06] bg-fg/[0.03]">
+                        <Receipt className="h-6 w-6 text-faint" />
+                      </div>
+                      <p className="text-[13px] text-mist">Nenhum pedido encontrado</p>
                     </div>
                   ) : (
-                    currentPedidos.map((p) => {
-                      const st = PEDIDO_STATUS[p.pedido?.pedidoStatus] ?? { label: "—", cls: "" };
-                      const nItens = p.pedido?.itensPedido?.length ?? 0;
-                      return (
-                        <div
-                          key={p.pedido?.pedidoId}
-                          className="border-b border-white/[0.04] px-5 py-3.5 flex items-center justify-between last:border-b-0"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Receipt className="text-[#9b8ff5]" size={18} />
-                            <div>
-                              <p className="text-[#e8e4ff]">#{p.pedido?.pedidoId?.slice(0, 8)}</p>
-                              <p className="text-xs text-[#6f6a93]">
-                                {formatDate(p.pedido?.dataPedido)} • {nItens} itens
+                    <>
+                      {currentPedidos.map((p) => {
+                        const total = p.pedido?.totalPedido ?? 0;
+                        const nItens = p.pedido?.itensPedido?.length ?? 0;
+                        const status = p.pedido?.pedidoStatus;
+                        return (
+                          <button
+                            key={p.pedido?.pedidoId}
+                            onClick={() => abrirPedido(p)}
+                            className="group relative flex h-[68px] w-full items-center gap-3 border-b border-fg/[0.04] px-5 text-left transition-colors before:absolute before:left-0 before:top-0 before:h-full before:w-[3px] before:rounded-r before:bg-accent before:opacity-0 before:transition-opacity last:border-b-0 hover:bg-fg/[0.03] hover:before:opacity-100"
+                          >
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/[0.12] text-accent-soft ring-1 ring-inset ring-accent/15">
+                              <Receipt size={16} />
+                            </span>
+
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-[13px] font-medium text-ink">
+                                <span className="text-faint">#</span>
+                                {p.pedido?.pedidoId?.slice(0, 8)}
+                              </p>
+                              <p className="text-[11px] text-faint">
+                                {formatDate(p.pedido?.dataPedido)} · {horaPedido(p.pedido?.dataPedido)} · {nItens} {nItens === 1 ? "item" : "itens"}
                               </p>
                             </div>
-                          </div>
-                          <div className="text-right">
-                            <span className={`text-xs px-2.5 py-1 rounded-full ${st.cls}`}>{st.label}</span>
-                            <p className="font-medium mt-1">{formatCurrency(p.pedido?.totalPedido ?? 0)}</p>
-                          </div>
-                        </div>
-                      );
-                    })
+
+                            <span className="hidden sm:block">
+                              <PedidoStatusBadge status={status} />
+                            </span>
+
+                            <div className="text-right">
+                              <p className="text-[13px] font-medium tabular-nums text-ink">{formatCurrency(total)}</p>
+                              <p className={`text-[11px] tabular-nums ${status === "ABERTO" ? "text-warning" : status === "CANCELADO" ? "text-danger" : "text-success"}`}>{status === "ABERTO" ? "aberto" : status === "CANCELADO" ? "cancelado" : "fechado"}</p>
+                            </div>
+                            <ChevronRight size={16} className="text-muted" />
+                          </button>
+                        );
+                      })}
+
+                      {/* Linhas fantasma pra manter altura constante */}
+                      {Array.from({ length: emptyRows }).map((_, i) => (
+                        <div key={`empty-${i}`} className="h-[68px] border-b border-fg/[0.04] last:border-b-0" />
+                      ))}
+                    </>
                   )}
                 </div>
 
-                {totalPages > 1 && (
-                  <div className="border-t border-white/[0.06] p-4 flex justify-between text-sm">
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      className="text-[#9b8ff5] disabled:opacity-40"
-                    >
-                      Anterior
-                    </button>
-                    <span className="text-[#6f6a93]">
-                      Página {currentPage} de {totalPages}
-                    </span>
-                    <button
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                      className="text-[#9b8ff5] disabled:opacity-40"
-                    >
-                      Próxima
-                    </button>
+                {/* Rodapé com paginação estilo PDV */}
+                {pedidosOrdenados.length > 0 && (
+                  <div className="flex shrink-0 items-center justify-between gap-3 border-t border-fg/[0.06] bg-fg/[0.02] px-5 py-3">
+                    <p className="flex items-center gap-2 text-[12px] text-faint">
+                      <TrendingUp size={14} className="text-accent-soft" />
+                      Ticket médio: <span className="font-medium tabular-nums text-ink">{formatCurrency(stats.ticket)}</span>
+                    </p>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-fg/[0.08] bg-fg/[0.04] text-mist transition-colors hover:bg-fg/[0.08] hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-fg/[0.04]"
+                      >
+                        <ChevronLeft size={14} />
+                      </button>
+                      <span className="text-[12px] text-faint">
+                        Página <span className="font-medium text-mist">{currentPage}</span>/<span className="font-medium text-mist">{totalPages}</span>
+                      </span>
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg border border-fg/[0.08] bg-fg/[0.04] text-mist transition-colors hover:bg-fg/[0.08] hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-fg/[0.04]"
+                      >
+                        <ChevronRight size={14} />
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* ASIDE - VERSÃO FINAL AJUSTADA */}
-            <aside className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-4">
-              <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-gradient-to-br from-[#1a1633] to-[#15132a] p-4">
-                <div className="pointer-events-none absolute -top-20 left-1/2 h-52 w-52 -translate-x-1/2 rounded bg-[#7c6ef5]/15 blur-[80px]" />
+            {/* Coluna lateral */}
+            <aside className="flex flex-col gap-4">
+              {/* Perfil / contatos */}
+              <div className="relative overflow-hidden rounded-2xl border border-fg/[0.08] bg-gradient-to-br from-surface-raised to-surface p-5">
+                <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-accent/10 blur-[70px]" />
 
-                {client && (
-                  <button
-                    onClick={() => setShowEdit(true)}
-                    className="absolute top-5 right-5 flex items-center gap-2 rounded-2xl border border-[#7c6ef5]/30 bg-[#7c6ef5]/[0.12] p-3 text-sm text-[#c4baff] hover:bg-[#7c6ef5]/20 hover:border-[#7c6ef5]/50 transition-all active:scale-95 z-10"
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </button>
-                )}
+                <div className="relative flex flex-col items-center text-center">
+                  <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-accent/40 to-accent-soft/10 text-3xl font-semibold text-accent-soft ring-1 ring-accent/30">{client ? getInitials(client.nome) : "?"}</div>
 
-                <div className="flex gap-3">
-                  <div className="flex-shrink-0">
-                    <div className="relative">
-                      <div className="relative flex h-28 w-28 items-center justify-center rounded-2xl border border-[#7c6ef5]/40 bg-[#0e0d1a] text-4xl text-[#d4c8ff]">
-                        {client ? getInitials(client.nome) : "?"}
-                      </div>
-                    </div>
-                  </div>
+                  <h2 className="mt-4 max-w-full truncate text-xl font-semibold tracking-tight text-ink">{client?.nome}</h2>
 
-                  <div className="flex-1 min-w-0 pt-1">
-                    <h2 className="text-2xl font-semibold tracking-tight text-[#f1eeff]">{client?.nome}</h2>
+                  <p className="mt-1 flex items-center gap-1.5 text-sm text-mist">
+                    <FileText size={14} className="text-accent" />
+                    {client?.cpfCnpj ? formatDocument(client.cpfCnpj) : "—"}
+                  </p>
 
-                    <p className="mt-1 flex items-center gap-1.5 text-sm text-[#a39ec7]">
-                      <FileText size={16} className="text-[#7c6ef5]" />
-                      {client?.cpfCnpj ? formatDocument(client.cpfCnpj) : "—"}
-                    </p>
-
-                    {/* Status */}
-                    <div className="mt-3 mb-4">{client && <StatusBadge status={client.status} />}</div>
-
-                    {/* Contatos */}
-                    <div className="space-y-2.5 text-[13px]">
-                      {client?.contato?.email && (
-                        <div className="flex items-center gap-3 text-[#c8c2e6]">
-                          <Mail size={17} className="text-[#7c6ef5]" />
-                          <span className="truncate">{client.contato.email}</span>
-                        </div>
-                      )}
-                      {(client?.contato?.celular || client?.contato?.telefone) && (
-                        <div className="flex items-center gap-3 text-[#c8c2e6]">
-                          <PhoneCall size={17} className="text-[#7c6ef5]" />
-                          <span>{formatNumber(client.contato.celular || client.contato.telefone || "")}</span>
-                        </div>
-                      )}
-                      {client?.contato?.whatsapp && (
-                        <div className="flex items-center gap-3 text-[#c8c2e6]">
-                          <MessageCircle size={17} className="text-[#5dcaa5]" />
-                          <span>{formatNumber(client.contato.whatsapp)}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <div className="mt-3">{client && <StatusBadge status={client.status} />}</div>
                 </div>
+
+                {(email || client?.contato?.celular || client?.contato?.telefone || client?.contato?.whatsapp) && (
+                  <div className="relative mt-5 space-y-2 border-t border-fg/[0.06] pt-4">
+                    {email && <ContactRow icon={<Mail size={15} />} value={email} />}
+                    {(client?.contato?.celular || client?.contato?.telefone) && <ContactRow icon={<PhoneCall size={15} />} value={formatNumber(client!.contato!.celular || client!.contato!.telefone || "")} />}
+                    {client?.contato?.whatsapp && <ContactRow icon={<MessageCircle size={15} />} value={formatNumber(client.contato.whatsapp)} tone="success" />}
+                  </div>
+                )}
               </div>
 
               {/* Status dos pedidos */}
               {pedidos.length > 0 && (
-                <div className="rounded-2xl border border-white/[0.08] bg-[#15132a] p-5">
-                  <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.12em] text-[#8a86b0]">
-                    Status dos pedidos
-                  </p>
-                  <div className="space-y-3">
+                <div className="rounded-2xl border border-fg/[0.07] bg-surface p-5">
+                  <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-mist">Status dos pedidos</p>
+                  <div className="space-y-3.5">
                     {statusBreak.map((s) => (
                       <div key={s.key}>
-                        <div className="mb-1 flex justify-between text-sm">
-                          <span className="flex items-center gap-2 text-[#8a85b4]">
+                        <div className="mb-1.5 flex items-center justify-between text-[13px]">
+                          <span className="flex items-center gap-2 text-mist">
                             <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.color }} />
                             {s.label}
                           </span>
-                          <span className="font-medium text-[#e8e4ff]">{s.count}</span>
+                          <span className="font-semibold tabular-nums text-ink">{s.count}</span>
                         </div>
-                        <div className="h-1.5 rounded-full bg-white/[0.06]">
-                          <div
-                            className="h-full rounded-full"
-                            style={{ width: `${s.pct}%`, backgroundColor: s.color }}
-                          />
+                        <div className="h-1.5 overflow-hidden rounded-full bg-fg/[0.06]">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${s.pct}%`, backgroundColor: s.color }} />
                         </div>
                       </div>
                     ))}
@@ -423,40 +460,12 @@ const ClienteDetalhe = () => {
               )}
 
               {/* Ações rápidas */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#15132a] p-5">
-                <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.12em] text-[#8a86b0]">Ações rápidas</p>
+              <div className="rounded-2xl border border-fg/[0.07] bg-surface p-5">
+                <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-mist">Ações rápidas</p>
                 <div className="flex flex-col gap-2.5">
-                  <a
-                    href={waDigits ? `https://wa.me/55${waDigits}` : undefined}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center gap-3 rounded-xl border border-white/[0.06] px-4 py-3 hover:bg-white/[0.04] transition-colors"
-                  >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0f6e56]/20 text-[#5dcaa5]">
-                      <MessageCircle size={18} />
-                    </span>
-                    <span>WhatsApp</span>
-                  </a>
-
-                  <a
-                    href={telDigits ? `tel:${telDigits}` : undefined}
-                    className="flex items-center gap-3 rounded-xl border border-white/[0.06] px-4 py-3 hover:bg-white/[0.04] transition-colors"
-                  >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#7c6ef5]/[0.15] text-[#9b8ff5]">
-                      <PhoneCall size={18} />
-                    </span>
-                    <span>Ligar</span>
-                  </a>
-
-                  <a
-                    href={email ? `mailto:${email}` : undefined}
-                    className="flex items-center gap-3 rounded-xl border border-white/[0.06] px-4 py-3 hover:bg-white/[0.04] transition-colors"
-                  >
-                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#4aa8ff]/15 text-[#a9d6ff]">
-                      <Mail size={18} />
-                    </span>
-                    <span>E-mail</span>
-                  </a>
+                  <QuickAction icon={<MessageCircle size={18} />} label="WhatsApp" href={waDigits ? `https://wa.me/55${waDigits}` : undefined} tone="success" />
+                  <QuickAction icon={<PhoneCall size={18} />} label="Ligar" href={telDigits ? `tel:${telDigits}` : undefined} />
+                  <QuickAction icon={<Mail size={18} />} label="E-mail" href={email ? `mailto:${email}` : undefined} tone="info" />
                 </div>
               </div>
             </aside>
@@ -464,15 +473,13 @@ const ClienteDetalhe = () => {
         )}
       </main>
 
-      {client && (
-        <ClienteEditForm
-          open={showEdit}
-          client={client}
-          saving={saving}
-          onClose={() => setShowEdit(false)}
-          onSubmit={handleUpdate}
-        />
-      )}
+      {/* Modal de edição */}
+      {client && <ClienteEditForm open={showEdit} client={client} saving={saving} onClose={() => setShowEdit(false)} onSubmit={handleUpdate} />}
+
+      {/* Modal do Invoice (igual PDV) */}
+      <Modal open={!!pedidoAberto} onClose={fecharPedido} title="Pedido" subtitle={pedidoAberto?.nome} size="full">
+        {pedidoAberto && <Invoice id={pedidoAberto.id} clienteId={pedidoAberto.clienteId} nome={pedidoAberto.nome} />}
+      </Modal>
     </div>
   );
 };

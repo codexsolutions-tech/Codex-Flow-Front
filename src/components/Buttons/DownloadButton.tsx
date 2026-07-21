@@ -1,45 +1,40 @@
-import { RefObject } from "react";
 import { toPng } from "html-to-image";
-import domtoimage from "dom-to-image";
-import { toast } from "react-toastify";
+import { RefObject } from "react";
 
-export const handleDownload = async (targetRef: RefObject<HTMLDivElement>) => {
-  if (!targetRef.current) {
-    toast.error("Elemento não encontrado para download.");
-    return;
-  }
+export const handleDownload = async (ref: RefObject<HTMLDivElement>, filename = `nota-${Date.now()}.png`) => {
+  const node = ref.current;
+  if (!node) return;
 
-  const node = targetRef.current;
+  const scrollParent = node.parentElement;
+  const prevScroll = scrollParent?.scrollTop ?? 0;
+  if (scrollParent) scrollParent.scrollTop = 0;
+
+  // Aguarda o próximo frame para o browser aplicar o scroll antes de medir
+  await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
 
   try {
-    const img = await toPng(node, {
+    const dataUrl = await toPng(node, {
+      backgroundColor: "#15132a",
+      width: node.scrollWidth,
+      height: node.scrollHeight,
+      pixelRatio: 2,
       cacheBust: true,
-      backgroundColor: "#ffffff",
+      style: {
+        // Garante que o nó capturado seja renderizado por inteiro,
+        // ignorando qualquer transform/scroll herdado
+        transform: "none",
+        transformOrigin: "top left",
+      },
     });
 
-    downloadImage(img);
-    toast.success("Download realizado com sucesso!");
-  } catch {
-    try {
-      const img = await domtoimage.toPng(node, {
-        cacheBust: true,
-        bgcolor: "#ffffff",
-      });
-
-      downloadImage(img);
-      toast.success("Download realizado com sucesso!");
-    } catch {
-      toast.error("Erro ao gerar imagem. Tente novamente.");
-    }
+    const link = document.createElement("a");
+    link.download = filename;
+    link.href = dataUrl;
+    link.click();
+  } catch (err) {
+    console.error("Erro ao gerar imagem da nota:", err);
+    throw err;
+  } finally {
+    if (scrollParent) scrollParent.scrollTop = prevScroll;
   }
-};
-
-const downloadImage = (dataUrl: string) => {
-  const link = document.createElement("a");
-  link.href = dataUrl;
-  link.download = "nota.png";
-
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
 };

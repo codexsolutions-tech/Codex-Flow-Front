@@ -118,10 +118,7 @@ function AlertIcon({ type }: { type: AlertType }) {
 
   return (
     <div className="relative h-[78px] w-[78px]">
-      <div
-        className="absolute -inset-1.5 rounded-full [animation:aa-halo_2.4s_ease-in-out_infinite]"
-        style={{ background: `radial-gradient(circle, ${glow} 0%, transparent 70%)` }}
-      />
+      <div className="absolute -inset-1.5 rounded-full [animation:aa-halo_2.4s_ease-in-out_infinite]" style={{ background: `radial-gradient(circle, ${glow} 0%, transparent 70%)` }} />
       <svg viewBox="0 0 60 60" width={78} height={78} className="relative">
         <circle className="aa-ring" cx="30" cy="30" r="26.5" fill="none" stroke={main} strokeWidth={4} opacity={0.9} />
         {type === "success" && <polyline className="aa-mark" points="19,31 27,39 42,22" {...stroke} />}
@@ -154,17 +151,7 @@ function AlertIcon({ type }: { type: AlertType }) {
 /*  MODAL                                                              */
 /* ------------------------------------------------------------------ */
 
-function Modal({
-  opts,
-  closing,
-  onConfirm,
-  onCancel,
-}: {
-  opts: AlertOptions;
-  closing: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
-}) {
+function Modal({ opts, closing, onConfirm, onCancel }: { opts: AlertOptions; closing: boolean; onConfirm: () => void; onCancel: () => void }) {
   const type = opts.type ?? "info";
   const confirmRef = useRef<HTMLButtonElement>(null);
 
@@ -192,24 +179,16 @@ function Modal({
         aria-label={opts.title}
         style={{
           ...accentVars(type),
-          background:
-            "radial-gradient(120% 90% at 50% -10%, var(--aa-glow) 0%, transparent 45%), linear-gradient(180deg, #1f1c2c 0%, #17151f 100%)",
+          background: "radial-gradient(120% 90% at 50% -10%, var(--aa-glow) 0%, transparent 45%), linear-gradient(180deg, #1f1c2c 0%, #17151f 100%)",
           animation: closing ? "aa-card-out .18s ease forwards" : "aa-card-in .34s cubic-bezier(.34,1.56,.64,1)",
         }}
         className="relative w-full max-w-[380px] rounded-[20px] border border-white/[0.08] px-[26px] pb-6 pt-[30px] shadow-[0_12px_40px_-20px_rgba(0,0,0,0.5)]"
       >
         {/* fio de luz no topo */}
-        <div
-          className="pointer-events-none absolute inset-x-[18%] top-0 h-px opacity-70"
-          style={{ background: "linear-gradient(90deg, transparent, var(--aa-main), transparent)" }}
-        />
+        <div className="pointer-events-none absolute inset-x-[18%] top-0 h-px opacity-70" style={{ background: "linear-gradient(90deg, transparent, var(--aa-main), transparent)" }} />
 
         {opts.showClose !== false && (
-          <button
-            aria-label="Fechar"
-            onClick={onCancel}
-            className="aa-btn absolute right-3.5 top-3.5 grid h-7 w-7 cursor-pointer place-items-center rounded-lg border-0 bg-transparent text-base leading-none text-[#8983ad]"
-          >
+          <button aria-label="Fechar" onClick={onCancel} className="aa-btn absolute right-3.5 top-3.5 grid h-7 w-7 cursor-pointer place-items-center rounded-lg border-0 bg-transparent text-base leading-none text-[#8983ad]">
             ✕
           </button>
         )}
@@ -218,20 +197,13 @@ function Modal({
           <AlertIcon type={type} />
         </div>
 
-        {opts.title && (
-          <h2 className="m-0 text-center text-[19px] font-[650] tracking-[-0.01em] text-[#e8e4ff]">{opts.title}</h2>
-        )}
+        {opts.title && <h2 className="m-0 text-center text-[19px] font-[650] tracking-[-0.01em] text-[#e8e4ff]">{opts.title}</h2>}
 
-        {opts.message && (
-          <div className="mt-2 text-center text-[13.5px] leading-[1.55] text-[#8983ad]">{opts.message}</div>
-        )}
+        {opts.message && <div className="mt-2 text-center text-[13.5px] leading-[1.55] text-[#8983ad]">{opts.message}</div>}
 
         <div className="mt-6 flex gap-2.5">
           {opts.showCancel && (
-            <button
-              onClick={onCancel}
-              className="aa-btn flex-1 cursor-pointer rounded-[11px] border border-white/[0.08] bg-white/[0.04] px-3.5 py-[11px] text-[13.5px] font-[550] text-[#e8e4ff]"
-            >
+            <button onClick={onCancel} className="aa-btn flex-1 cursor-pointer rounded-[11px] border border-white/[0.08] bg-white/[0.04] px-3.5 py-[11px] text-[13.5px] font-[550] text-[#e8e4ff]">
               {opts.cancelText ?? "Cancelar"}
             </button>
           )}
@@ -240,8 +212,7 @@ function Modal({
             onClick={onConfirm}
             style={{
               ...accentVars(type),
-              background:
-                "linear-gradient(180deg, var(--aa-main), color-mix(in srgb, var(--aa-main) 80%, transparent))",
+              background: "linear-gradient(180deg, var(--aa-main), color-mix(in srgb, var(--aa-main) 80%, transparent))",
             }}
             className="aa-btn flex-1 cursor-pointer rounded-[11px] border-0 px-3.5 py-[11px] text-[13.5px] font-[650] text-[#0b0a12] shadow-[0_4px_14px_-8px_var(--aa-main)]"
           >
@@ -278,39 +249,21 @@ function Toast({ opts, closing, onClose }: { opts: AlertOptions; closing: boolea
       style={{
         ...anchor,
         background: "linear-gradient(180deg, #1f1c2c, #17151f)",
-        animation: closing
-          ? "aa-toast-out .2s ease forwards"
-          : `${anchor.animationName} .32s cubic-bezier(.34,1.56,.64,1)`,
+        animation: closing ? "aa-toast-out .2s ease forwards" : `${anchor.animationName} .32s cubic-bezier(.34,1.56,.64,1)`,
       }}
       className="fixed z-[9999] flex max-w-[340px] items-center gap-3 overflow-hidden rounded-[14px] border border-white/[0.08] px-[15px] py-[13px] shadow-[0_8px_24px_-14px_rgba(0,0,0,0.55)]"
     >
-      <span
-        className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-[9px] text-[15px]"
-        style={{ background: accent.glow, color: accent.soft }}
-      >
+      <span className="grid h-[30px] w-[30px] shrink-0 place-items-center rounded-[9px] text-[15px]" style={{ background: accent.glow, color: accent.soft }}>
         {type === "success" ? "✓" : type === "error" ? "✕" : type === "warning" ? "!" : type === "question" ? "?" : "i"}
       </span>
       <div className="min-w-0">
         {opts.title && <div className="text-[13.5px] font-semibold leading-[1.3] text-[#e8e4ff]">{opts.title}</div>}
-        {opts.message && (
-          <div className={`text-[12.5px] leading-[1.4] text-[#8983ad] ${opts.title ? "mt-0.5" : ""}`}>
-            {opts.message}
-          </div>
-        )}
+        {opts.message && <div className={`text-[12.5px] leading-[1.4] text-[#8983ad] ${opts.title ? "mt-0.5" : ""}`}>{opts.message}</div>}
       </div>
-      <button
-        aria-label="Fechar"
-        onClick={onClose}
-        className="aa-btn ml-1 cursor-pointer border-0 bg-transparent text-[13px] text-[#8983ad]"
-      >
+      <button aria-label="Fechar" onClick={onClose} className="aa-btn ml-1 cursor-pointer border-0 bg-transparent text-[13px] text-[#8983ad]">
         ✕
       </button>
-      {timer > 0 && (
-        <span
-          className="absolute bottom-0 left-0 h-[2.5px] w-full origin-left"
-          style={{ background: accent.main, animation: `aa-progress ${timer}ms linear forwards` }}
-        />
-      )}
+      {timer > 0 && <span className="absolute bottom-0 left-0 h-[2.5px] w-full origin-left" style={{ background: accent.main, animation: `aa-progress ${timer}ms linear forwards` }} />}
     </div>
   );
 }
@@ -374,16 +327,7 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
       {children}
       {active &&
         createPortal(
-          active.toast ? (
-            <Toast opts={active} closing={closing} onClose={() => finish({ confirmed: false, dismissed: true })} />
-          ) : (
-            <Modal
-              opts={active}
-              closing={closing}
-              onConfirm={() => finish({ confirmed: true, dismissed: false })}
-              onCancel={() => finish({ confirmed: false, dismissed: true })}
-            />
-          ),
+          active.toast ? <Toast opts={active} closing={closing} onClose={() => finish({ confirmed: false, dismissed: true })} /> : <Modal opts={active} closing={closing} onConfirm={() => finish({ confirmed: true, dismissed: false })} onCancel={() => finish({ confirmed: false, dismissed: true })} />,
           document.body,
         )}
     </AlertContext.Provider>
@@ -397,17 +341,12 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
 function makeHelpers(fire: FireFn) {
   return {
     fire,
-    success: (title: string, message?: React.ReactNode, o?: AlertOptions) =>
-      fire({ type: "success", title, message, ...o }),
-    error: (title: string, message?: React.ReactNode, o?: AlertOptions) =>
-      fire({ type: "error", title, message, ...o }),
-    warning: (title: string, message?: React.ReactNode, o?: AlertOptions) =>
-      fire({ type: "warning", title, message, ...o }),
+    success: (title: string, message?: React.ReactNode, o?: AlertOptions) => fire({ type: "success", title, message, ...o }),
+    error: (title: string, message?: React.ReactNode, o?: AlertOptions) => fire({ type: "error", title, message, ...o }),
+    warning: (title: string, message?: React.ReactNode, o?: AlertOptions) => fire({ type: "warning", title, message, ...o }),
     info: (title: string, message?: React.ReactNode, o?: AlertOptions) => fire({ type: "info", title, message, ...o }),
-    confirm: (title: string, message?: React.ReactNode, o?: AlertOptions) =>
-      fire({ type: "question", title, message, showCancel: true, confirmText: "Confirmar", ...o }),
-    toast: (type: AlertType, title: string, message?: React.ReactNode, o?: AlertOptions) =>
-      fire({ type, title, message, toast: true, showClose: false, ...o }),
+    confirm: (title: string, message?: React.ReactNode, o?: AlertOptions) => fire({ type: "question", title, message, showCancel: true, confirmText: "Confirmar", ...o }),
+    toast: (type: AlertType, title: string, message?: React.ReactNode, o?: AlertOptions) => fire({ type, title, message, toast: true, showClose: false, ...o }),
   };
 }
 

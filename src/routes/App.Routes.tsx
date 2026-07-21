@@ -28,6 +28,8 @@ import SalesOverviewPage from "../pages/Sales/pages/SalesOverview.Page";
 import SalesList from "../pages/Sales/pages/SalesList.Page";
 
 import NotFoundPage from "../pages/NotFoundPage";
+import AparenciaTab from "../pages/Config/pages/Aparencia.Page";
+import useTheme from "../hooks/useTheme";
 
 const PUBLIC_PATHS = ["/login", "/cadastro", "/page"];
 
@@ -74,6 +76,7 @@ function AppRoutesContent({ isLogged }: { isLogged: boolean }) {
             <Route index element={<Navigate to="perfil" replace />} />
             <Route path="perfil" element={<ProfilePage />} />
             <Route path="empresa" element={<EmpresaPage />} />
+            <Route path="aparencia" element={<AparenciaTab />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 
@@ -93,6 +96,7 @@ function AppRoutesContent({ isLogged }: { isLogged: boolean }) {
 }
 
 const AppRoutes = () => {
+  useTheme();
   const { isLogged, initialize, loading } = useAuth();
 
   useEffect(() => {
@@ -102,7 +106,6 @@ const AppRoutes = () => {
   if (loading) {
     return <LoadingScreen />;
   }
-
   return (
     <BrowserRouter>
       <AppRoutesContent isLogged={isLogged} />

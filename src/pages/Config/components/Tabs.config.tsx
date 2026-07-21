@@ -1,4 +1,4 @@
-import { Building2, User } from "lucide-react";
+import { Building2, Palette, User } from "lucide-react";
 
 export const TabsConfig = [
   {
@@ -11,9 +11,9 @@ export const TabsConfig = [
     path: "/configuracoes/empresa",
     icon: <Building2 size={15} />,
   },
-  // {
-  //   label: "Aparência",
-  //   path: "/configuracoes/aparencia",
-  //   icon: <Palette size={15} />,
-  // },
+  {
+    label: "Aparência",
+    path: "/configuracoes/aparencia",
+    icon: <Palette size={15} />,
+  },
 ];

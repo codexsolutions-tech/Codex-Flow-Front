@@ -6,45 +6,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import CustomerType, { eStatus } from "../../../../types/ClientType";
 import Field from "../../../../components/Input/Field";
-import { Modal } from "../../../../components/Modals/Modal";
+import { Modal } from "../../../../components/Modal";
 import { useAlert } from "../../../../components/Alert/Alert";
-import { formatDocument, onlyDigits } from "../../../../utils/format";
+import { formatDocument, formatNumber } from "../../../../utils/format";
 import { clienteSchema, ClienteFormInput, ClienteFormData } from "../Schema/cliente.schema";
-
-const maskDoc = (v: string) => {
-  const d = onlyDigits(v).slice(0, 14);
-  if (d.length <= 11) {
-    return d
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-  }
-  return d
-    .replace(/(\d{2})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1.$2")
-    .replace(/(\d{3})(\d)/, "$1/$2")
-    .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
-};
-
-const maskPhone = (v: string) => {
-  const d = onlyDigits(v).slice(0, 11);
-  if (!d) return "";
-  const ddd = d.slice(0, 2);
-  const rest = d.slice(2);
-  if (d.length <= 2) return `(${ddd}`;
-  if (d.length <= 6) return `(${ddd}) ${rest}`;
-  if (d.length <= 10) return `(${ddd}) ${rest.slice(0, 4)}-${rest.slice(4)}`;
-  return `(${ddd}) ${rest.slice(0, 5)}-${rest.slice(5)}`;
-};
 
 const toDefaults = (c: CustomerType): ClienteFormInput => ({
   nome: c.nome ?? "",
   cpfCnpj: formatDocument(c.cpfCnpj ?? ""),
   status: c.status ?? eStatus.ATIVO,
   contato: {
-    telefone: maskPhone(String(c.contato?.telefone ?? "")),
-    celular: maskPhone(String(c.contato?.celular ?? "")),
-    whatsapp: maskPhone(String(c.contato?.whatsapp ?? "")),
+    telefone: formatNumber(String(c.contato?.telefone ?? "")),
+    celular: formatNumber(String(c.contato?.celular ?? "")),
+    whatsapp: formatNumber(String(c.contato?.whatsapp ?? "")),
     email: c.contato?.email ?? "",
   },
 });
@@ -70,10 +44,9 @@ const ClienteEditForm = ({ open, client, saving = false, onClose, onSubmit }: Pr
     defaultValues: toDefaults(client),
   });
 
-  // Sempre que o modal abrir, recarrega os valores atuais do cliente
   useEffect(() => {
     if (open) reset(toDefaults(client));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    console.log(client);
   }, [open, client]);
 
   const masked = (name: Path<ClienteFormInput>, mask: (v: string) => string) => {
@@ -113,7 +86,7 @@ const ClienteEditForm = ({ open, client, saving = false, onClose, onSubmit }: Pr
             placeholder="Somente números"
             inputMode="numeric"
             error={errors.cpfCnpj?.message}
-            {...masked("cpfCnpj", maskDoc)}
+            {...masked("cpfCnpj", formatDocument)}
           />
 
           <div className="flex flex-col">
@@ -145,7 +118,7 @@ const ClienteEditForm = ({ open, client, saving = false, onClose, onSubmit }: Pr
             placeholder="(00) 0000-0000"
             inputMode="tel"
             error={errors.contato?.telefone?.message}
-            {...masked("contato.telefone", maskPhone)}
+            {...masked("contato.telefone", formatNumber)}
           />
           <Field
             label="Celular"
@@ -153,7 +126,7 @@ const ClienteEditForm = ({ open, client, saving = false, onClose, onSubmit }: Pr
             placeholder="(00) 00000-0000"
             inputMode="tel"
             error={errors.contato?.celular?.message}
-            {...masked("contato.celular", maskPhone)}
+            {...masked("contato.celular", formatNumber)}
           />
           <Field
             label="WhatsApp"
@@ -161,7 +134,7 @@ const ClienteEditForm = ({ open, client, saving = false, onClose, onSubmit }: Pr
             placeholder="(00) 00000-0000"
             inputMode="tel"
             error={errors.contato?.whatsapp?.message}
-            {...masked("contato.whatsapp", maskPhone)}
+            {...masked("contato.whatsapp", formatNumber)}
           />
           <Field
             label="E-mail"

@@ -28,7 +28,7 @@ export default {
         sans: ["Inter", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
       },
       borderColor: {
-        DEFAULT: "rgb(var(--fg) / 0.08)", // seu border-white/[0.08] vira só "border"
+        DEFAULT: "rgb(var(--fg) / 0.08)",
       },
     },
   },

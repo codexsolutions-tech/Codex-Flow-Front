@@ -30,10 +30,6 @@ import { onlyDigits } from "../../../utils/format";
 
 const LANDING_ROUTE = "/";
 
-/* ------------------------------------------------------------------ */
-/* Tipos do backend                                                    */
-/* ------------------------------------------------------------------ */
-
 export type enderecoEmpresaDto = {
   logradouro: string;
   numero: string;

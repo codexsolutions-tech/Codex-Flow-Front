@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Users, UserPlus2, Search, AlertTriangle, ChevronLeft, ChevronRight, PieChart, RotateCw } from "lucide-react";
+import { Users, Search, AlertTriangle, ChevronLeft, ChevronRight, PieChart, RotateCw } from "lucide-react";
 import CustomerService from "../../services/client.service";
 import CustomerType, { eStatus, ContactType } from "../../types/ClientType";
 import ClienteForm from "./Components/Form/cliente.form";
@@ -8,6 +8,7 @@ import type { ClienteFormData } from "./Components/Schema/cliente.schema";
 import ClientesGrowthChart from "./Components/Chart/ClientesGrowthChart";
 import { useAlert } from "../../components/Alert/Alert";
 import { formatDocument, formatDate, formatNumber, getInitials, onlyDigits, toPercent } from "../../utils/format";
+import HeaderPage from "../../components/Headers/HeaderPage";
 
 const SEARCH_DEBOUNCE = 250;
 
@@ -45,11 +46,7 @@ function SkeletonRows({ count }: { count: number }) {
   return (
     <div className="animate-pulse">
       {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className={`grid ${COLS} items-center border-b border-white/[0.04] px-5`}
-          style={{ height: ROW_HEIGHT }}
-        >
+        <div key={i} className={`grid ${COLS} items-center border-b border-white/[0.04] px-5`} style={{ height: ROW_HEIGHT }}>
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 shrink-0 rounded-xl bg-white/[0.05]" />
             <div className="flex flex-col gap-1.5">
@@ -132,18 +129,14 @@ const Clientes = () => {
     return (
       customers
         .filter((c) => {
-          const matchStatus =
-            filtro === "todos" ||
-            (filtro === "ativo" && c.status === eStatus.ATIVO) ||
-            (filtro === "inativo" && c.status === eStatus.INATIVO);
+          const matchStatus = filtro === "todos" || (filtro === "ativo" && c.status === eStatus.ATIVO) || (filtro === "inativo" && c.status === eStatus.INATIVO);
 
           if (!matchStatus) return false;
           if (!q) return true;
 
           const matchNome = c.nome?.toLowerCase().includes(q);
           const matchEmail = c.contato?.email?.toLowerCase().includes(q);
-          const matchDoc =
-            digits.length > 0 && (onlyDigits(c.cpfCnpj).includes(digits) || contactDigits(c.contato).includes(digits));
+          const matchDoc = digits.length > 0 && (onlyDigits(c.cpfCnpj).includes(digits) || contactDigits(c.contato).includes(digits));
 
           return matchNome || matchEmail || matchDoc;
         })
@@ -199,30 +192,8 @@ const Clientes = () => {
     <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#0e0d1a] text-[#e8e4ff]">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(60%_100%_at_50%_0%,rgba(124,110,245,0.16),transparent_70%)]" />
 
-      <header className="relative z-20 shrink-0 border-b border-white/[0.07] bg-[#0e0d1a]/80 backdrop-blur-xl">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 lg:px-8">
-          <div className="flex items-center gap-3.5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#7c6ef5]/25 bg-gradient-to-br from-[#7c6ef5]/25 to-[#a78bfa]/10">
-              <Users className="h-5 w-5 text-[#b7aef9]" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold tracking-tight text-[#f1eeff]">Clientes</h1>
-              <p className="text-xs text-[#6f6a93]">
-                {formatNumber(stats.total)} {stats.total === 1 ? "cliente cadastrado" : "clientes cadastrados"}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex cursor-pointer items-center gap-2 rounded-xl bg-gradient-to-br from-[#7c6ef5] to-[#8b7bf7] px-4 py-2.5 text-[13px] font-medium text-white shadow-[0_8px_24px_-8px_rgba(124,110,245,0.7)] transition-all hover:brightness-110 active:scale-[0.98]"
-          >
-            <UserPlus2 className="h-4 w-4" />
-            Novo cliente
-          </button>
-        </div>
-      </header>
+      <HeaderPage title="Clientes" subtitle="Cadastre, organize e acompanhe sua base de clientes" icon={<Users />} />
 
-      {/* Conteúdo — ocupa o resto exato da viewport */}
       <main className="relative flex min-h-0 flex-1 flex-col gap-5 overflow-hidden px-5 py-5 lg:px-8 lg:py-6">
         {error && (
           <div className="flex shrink-0 items-center justify-between gap-2.5 rounded-xl border border-[#a22d2d]/40 bg-[#a22d2d]/15 px-4 py-3 text-[13px] text-[#f0a5a5]">
@@ -230,10 +201,7 @@ const Clientes = () => {
               <AlertTriangle className="h-4 w-4 shrink-0" />
               {error}
             </span>
-            <button
-              onClick={load}
-              className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[#f0a5a5]/30 px-2.5 py-1 text-[12px] font-medium text-[#f0a5a5] transition-colors hover:bg-[#f0a5a5]/10"
-            >
+            <button onClick={load} className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[#f0a5a5]/30 px-2.5 py-1 text-[12px] font-medium text-[#f0a5a5] transition-colors hover:bg-[#f0a5a5]/10">
               <RotateCw className="h-3.5 w-3.5" /> Tentar novamente
             </button>
           </div>
@@ -260,13 +228,7 @@ const Clientes = () => {
               <div className="flex flex-1 flex-wrap items-center justify-end gap-2">
                 <div className="flex min-w-[200px] flex-1 items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 transition-colors focus-within:border-[#7c6ef5]/60 focus-within:bg-white/[0.06] sm:max-w-xs">
                   <Search className="h-4 w-4 text-[#4e4a72]" />
-                  <input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Buscar por nome, documento, e-mail…"
-                    aria-label="Buscar clientes"
-                    className="flex-1 bg-transparent py-2 text-[13px] text-[#e8e4ff] outline-none placeholder:text-[#6f6a93]"
-                  />
+                  <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome, documento, e-mail…" aria-label="Buscar clientes" className="flex-1 bg-transparent py-2 text-[13px] text-[#e8e4ff] outline-none placeholder:text-[#6f6a93]" />
                 </div>
                 <div className="flex items-center gap-1 rounded-xl border border-white/[0.07] bg-white/[0.03] p-1">
                   {FILTROS.map((opt) => (
@@ -274,11 +236,7 @@ const Clientes = () => {
                       key={opt.value}
                       onClick={() => setFiltro(opt.value)}
                       aria-pressed={filtro === opt.value}
-                      className={`cursor-pointer rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors ${
-                        filtro === opt.value
-                          ? "bg-[#7c6ef5] text-white shadow-[0_4px_14px_-4px_rgba(124,110,245,0.8)]"
-                          : "text-[#8a85b4] hover:text-[#e8e4ff]"
-                      }`}
+                      className={`cursor-pointer rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors ${filtro === opt.value ? "bg-[#7c6ef5] text-white shadow-[0_4px_14px_-4px_rgba(124,110,245,0.8)]" : "text-[#8a85b4] hover:text-[#e8e4ff]"}`}
                     >
                       {opt.label}
                     </button>
@@ -288,9 +246,7 @@ const Clientes = () => {
             </div>
 
             {/* Cabeçalho de colunas */}
-            <div
-              className={`grid shrink-0 ${COLS} border-b border-white/[0.06] bg-white/[0.02] px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#4e4a72]`}
-            >
+            <div className={`grid shrink-0 ${COLS} border-b border-white/[0.06] bg-white/[0.02] px-5 py-2.5 text-[10px] font-medium uppercase tracking-[0.12em] text-[#4e4a72]`}>
               <p>Cliente</p>
               <p>Documento</p>
               <p>Status</p>
@@ -309,15 +265,10 @@ const Clientes = () => {
                     </div>
                     <div>
                       <p className="text-[13px] text-[#b7b2d8]">Nenhum cliente encontrado</p>
-                      <p className="mt-0.5 text-[11px]">
-                        {hasFilters ? "Ajuste a busca ou os filtros." : "Comece cadastrando seu primeiro cliente."}
-                      </p>
+                      <p className="mt-0.5 text-[11px]">{hasFilters ? "Ajuste a busca ou os filtros." : "Comece cadastrando seu primeiro cliente."}</p>
                     </div>
                     {!hasFilters && (
-                      <button
-                        onClick={() => setShowCreate(true)}
-                        className="mt-1 cursor-pointer rounded-xl bg-[#7c6ef5] px-3.5 py-2 text-[12px] font-medium text-white transition-colors hover:bg-[#8b7bf7]"
-                      >
+                      <button onClick={() => setShowCreate(true)} className="mt-1 cursor-pointer rounded-xl bg-[#7c6ef5] px-3.5 py-2 text-[12px] font-medium text-white transition-colors hover:bg-[#8b7bf7]">
                         Cadastrar primeiro cliente
                       </button>
                     )}
@@ -334,34 +285,23 @@ const Clientes = () => {
                       style={{ height: ROW_HEIGHT }}
                     >
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#7c6ef5]/25 bg-gradient-to-br from-[#7c6ef5]/25 to-[#a78bfa]/10 text-[11px] font-semibold text-[#b7aef9]">
-                          {getInitials(c.nome)}
-                        </div>
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#7c6ef5]/25 bg-gradient-to-br from-[#7c6ef5]/25 to-[#a78bfa]/10 text-[11px] font-semibold text-[#b7aef9]">{getInitials(c.nome)}</div>
                         <div className="flex min-w-0 flex-col">
                           <span className="truncate text-[13px] font-medium text-[#e8e4ff]">{c.nome}</span>
-                          {c.contato?.email && (
-                            <span className="truncate text-[11px] text-[#6f6a93]">{c.contato.email}</span>
-                          )}
+                          {c.contato?.email && <span className="truncate text-[11px] text-[#6f6a93]">{c.contato.email}</span>}
                         </div>
                       </div>
                       <span className="text-[12px] tabular-nums text-[#8a85b4]">{formatDocument(c.cpfCnpj)}</span>
                       <span>
                         <StatusBadge status={c.status} />
                       </span>
-                      <span className="text-right text-[12px] tabular-nums text-[#8a85b4]">
-                        {formatDate(c.created_at)}
-                      </span>
+                      <span className="text-right text-[12px] tabular-nums text-[#8a85b4]">{formatDate(c.created_at)}</span>
                     </button>
                   ))}
 
                   {/* Linhas vazias pra preencher o espaço quando a página não enche */}
                   {Array.from({ length: emptySlots }).map((_, i) => (
-                    <div
-                      key={`empty-${i}`}
-                      aria-hidden
-                      className="border-b border-white/[0.04]"
-                      style={{ height: ROW_HEIGHT }}
-                    />
+                    <div key={`empty-${i}`} aria-hidden className="border-b border-white/[0.04]" style={{ height: ROW_HEIGHT }} />
                   ))}
                 </>
               )}
@@ -410,10 +350,7 @@ const Clientes = () => {
               </div>
 
               <div className="flex h-2.5 overflow-hidden rounded-full bg-white/[0.05]">
-                <div
-                  className="bg-gradient-to-r from-[#0f6e56] to-[#5dcaa5] transition-all"
-                  style={{ width: `${pctAtivos}%` }}
-                />
+                <div className="bg-gradient-to-r from-[#0f6e56] to-[#5dcaa5] transition-all" style={{ width: `${pctAtivos}%` }} />
                 <div className="flex-1 bg-white/[0.08]" />
               </div>
 

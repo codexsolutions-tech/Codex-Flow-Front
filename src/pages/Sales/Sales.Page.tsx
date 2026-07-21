@@ -1,10 +1,9 @@
 import { ShoppingCart } from "lucide-react";
+import { Outlet } from "react-router-dom";
 
 import HeaderPage from "../../components/Headers/HeaderPage";
-import { Outlet } from "react-router-dom";
 import { TabsVendas } from "./components/Tabs.sales";
 
-/* ======================= Vendas Outlet ======================= */
 const SalesPage = () => {
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#0e0d1a] text-[#e8e4ff]">

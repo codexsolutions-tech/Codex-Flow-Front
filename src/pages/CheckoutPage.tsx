@@ -21,11 +21,11 @@ import {
   Sparkles,
   ArrowRight,
 } from "lucide-react";
-import { Modal } from "../components/Modals/Modal";
+import { Modal } from "../components/Modal";
 import { useAlert } from "../components/Alert/Alert";
 import { formatCurrency } from "../utils/formatCurrency";
 import { formatDocument } from "../utils/format";
-// ⚠️ Ajuste os caminhos abaixo conforme seu projeto
+
 import useEnterprise from "../store/enterprise.store";
 import type EnterpriseType from "../types/EnterpriseType";
 

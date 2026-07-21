@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ShoppingCart, Search, XCircle } from "lucide-react";
-import { Modal } from "../../../components/Modals/Modal";
+import { Modal } from "../../../components/Modal";
 import Invoice from "../../../components/Invoice/Invoice";
 import NoteService from "../../../services/note.service";
 import { formatCurrency } from "../../../utils/formatCurrency";
