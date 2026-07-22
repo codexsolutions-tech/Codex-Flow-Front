@@ -1,5 +1,5 @@
 import sysgrafix from "./sysgrafix.service";
-import NoteType, { PedidoClienteType } from "../types/InvoiceType";
+import NoteType from "../types/InvoiceType";
 
 const NoteService = {
   create: (note: NoteType | Record<string, unknown>) => sysgrafix.post("/pedidos/novo-pedido", note),
