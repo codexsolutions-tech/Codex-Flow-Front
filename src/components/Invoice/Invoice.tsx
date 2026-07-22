@@ -195,7 +195,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
   const formaPagamento = payments.length > 0 ? (payments.every(({ type }) => type === payments[0].type) ? payments[0].type : "Misto") : "Não consta";
 
   const salvarDesabilitado = !clienteFinal || linhas.length === 0;
-  const statusPedido = pedidoInfo?.pedido.pedidoStatus;
+  const statusPedido = pedidoInfo?.pedido.pedidoStatus ?? "";
 
   const botaoToolbar = "grid h-10 w-10 place-items-center rounded-lg transition-all duration-200 active:scale-95";
   const labelResumo = "block text-[11px] uppercase tracking-wide text-[#6b66a0]";
