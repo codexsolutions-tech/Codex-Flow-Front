@@ -81,7 +81,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
     if (!id) return;
 
     NoteService.getById(id)
-      .then((registro) => {
+      .then((registro:any) => {
         if (!registro) {
           alert.error("Pedido não encontrado", "Não localizamos esse pedido no sistema.");
           return;
@@ -90,7 +90,7 @@ const Invoice = ({ id, clienteId, nome }: InvoiceProps) => {
         setPedidoInfo(registro);
 
         setLinhas(
-          (registro.pedido?.itensPedido ?? []).map((item) => ({
+          (registro.pedido?.itensPedido ?? []).map((item:any) => ({
             uid: gerarUID(),
             produtoId: String(item.produto.produtoId),
             nome: item.produto.nomeProduto,

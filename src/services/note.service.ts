@@ -6,7 +6,12 @@ const NoteService = {
 
   getAll: () => sysgrafix.get("/pedidos/"),
 
-  getById: (pedidoId: string): Promise<PedidoClienteType | undefined> => sysgrafix.get<{ data: PedidoClienteType[] }>(`/pedidos/${pedidoId}`).then(({ data }) => data.data[0]),
+  getById: async (pedidoId: string) => {
+    
+    const response = await sysgrafix.get<any>(`/pedidos/${pedidoId}`) 
+    const pedido = response.data;
+    return pedido.data;
+  },
 
   update: async (note: Record<string, unknown>, pedidoId: string) => sysgrafix.patch(`/pedidos/alterar/${pedidoId}`, note),
 
