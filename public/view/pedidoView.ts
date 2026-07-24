@@ -15,11 +15,12 @@ export type pedidoCliente = {
   produtosPedido?: itemPedido[];
 };
 
+
 export type itemPedido = {
   itemPedidoId: string;
   quantidadeItem: number;
   valorVendaItem: number;
-  subtotalItens?: number;
+  subtotalItens: number;
   produto: produtoPedido;
 };
 
@@ -38,8 +39,9 @@ export type produtoPedido = {
 };
 
 export type pedidoUpdate = {
-  clienteId: string | undefined;
-  itensPedido: itemUpdate[];
+  clienteId: string;
+  codigoEmpresa?: string;
+  produtosPedido: itemUpdate[];
 };
 
 export type itemUpdate = {
@@ -48,13 +50,3 @@ export type itemUpdate = {
   valorVenda: number;
 };
 
-export type novoPedidoDto = {
-  clienteId: string | undefined;
-  itensPedido: itemNovoPedido[];
-};
-
-export type itemNovoPedido = {
-  produtoId: string;
-  quantidade: number;
-  valorVenda: number;
-};

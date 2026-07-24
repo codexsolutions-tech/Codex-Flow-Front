@@ -111,6 +111,7 @@ const PontoDeVenda = () => {
   }, []);
 
   const vendasVisiveis = useMemo(() => {
+    console.log(vendas);
     const base = somenteHoje ? vendas.filter((v) => ehHoje(v.pedido.dataPedido)) : vendas;
     return [...base].sort((a, b) => +new Date(b.pedido.dataPedido) - +new Date(a.pedido.dataPedido));
   }, [vendas, somenteHoje]);
